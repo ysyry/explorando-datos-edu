@@ -87,7 +87,7 @@
 </head>
 <body>
 <header>
-  <h1>🧱 Constructor de Consultas</h1>
+  <h1>Constructor de Consultas</h1>
   <p>VLA en datos · armá tu consulta paso a paso y construí tu ficha</p>
   <button class="fichaBtn" id="fichaBtn" onclick="goFicha()" style="display:none"></button>
 </header>
@@ -105,11 +105,11 @@ const app=document.getElementById("app"),fichaBtn=document.getElementById("ficha
 const KEY="vla_constructor_v1";
 
 const VERBS={
- ver:["👁️ Ver las filas","mostrar la tabla que quedó tras filtrar"],
- sumar:["➕ Contar / Sumar / Promediar","calcular un número de una columna"],
- ordenar:["↕️ Ordenar","la que más / la que menos"],
- agrupar:["🗂️ Agrupar","juntar por categoría y resumir"],
- graficar:["📈 Graficar","comparar o ver cómo cambia"]
+ ver:["Ver las filas","mostrar la tabla que quedó tras filtrar"],
+ sumar:["Contar / Sumar / Promediar","calcular un número de una columna"],
+ ordenar:["Ordenar","la que más / la que menos"],
+ agrupar:["Agrupar","juntar por categoría y resumir"],
+ graficar:["Graficar","comparar o ver cómo cambia"]
 };
 const OPS={eq:"==",ne:"≠",gt:">",lt:"<",ge:"≥",le:"≤"};
 const RSYM={eq:"==",ne:"!=",gt:">",lt:"<",ge:">=",le:"<="};
@@ -159,14 +159,14 @@ function home(){
   app.innerHTML=`<div class="card">
     <h2>Empecemos</h2>
     <p class="muted">Cargá un archivo <b>CSV</b> con tus datos (de turismo, biodiversidad, lo que sea). La app detecta sola las columnas.</p>
-    <div class="uploadbox" id="up"><div style="font-size:2rem">📂</div>
+    <div class="uploadbox" id="up"><div style="font-size:2rem"></div>
       <div style="margin-top:6px;font-weight:700">Cargar CSV</div>
       <div class="muted" style="font-size:.82rem">Tocá acá y elegí tu archivo .csv</div>
       <input type="file" id="file" accept=".csv,text/csv" style="display:none"></div>
-    <button class="btn" onclick="practiceHome()">🎯 Practiquemos (ejercicios que se corrigen)</button>
+    <button class="btn" onclick="practiceHome()">Practiquemos un rato!</button>
     <button class="btn ghost" onclick="loadDemo()">Probar con datos de ejemplo (libre)</button>
     ${hasSaved?`<button class="btn" onclick="if(load())setupProyecto()">▶ Continuar mi proyecto guardado</button>
-      <button class="btn ghost" onclick="reset()">🗑️ Borrar y empezar de cero</button>`:""}
+      <button class="btn ghost" onclick="reset()">Borrar y empezar de cero</button>`:""}
   </div>`;
   const up=document.getElementById("up"),file=document.getElementById("file");
   up.onclick=()=>file.click();
@@ -192,10 +192,10 @@ Noviembre,5200,Alta,60,33000`;
 function confirmTypes(){
   fichaBtn.style.display="none";
   app.innerHTML=`<div class="card">
-    <div class="crumbs">📄 ${D.nombre} · ${D.data.length} filas</div>
+    <div class="crumbs">${D.nombre} · ${D.data.length} filas</div>
     <h2>¿Está bien el tipo de cada columna?</h2>
     <p class="muted">Texto = categoría (C) · Número = cuantitativa (Q).</p>
-    <div class="hint">💡 Ojo: a veces una columna de <b>números no es cuantitativa</b> (un código, un ID, a veces el año). Si no tiene sentido promediarla, ponela como <b>texto</b>.</div>
+    <div class="hint">Ojo: a veces una columna de <b>números no es cuantitativa</b> (un código, un ID, a veces el año). Si no tiene sentido promediarla, ponela como <b>texto</b>.</div>
     <div style="margin-top:14px">${D.cols.map((c,i)=>`<div class="typerow">
       <span class="cn">${c.k}</span>
       <select onchange="D.cols[${i}].t=this.value">
@@ -214,9 +214,9 @@ function afterTypes(){
 
 /* ===================== SETUP PROYECTO ===================== */
 function setupProyecto(){
-  fichaBtn.style.display=FICHA.length?"block":"none";fichaBtn.textContent=`📋 Mi ficha (${FICHA.length})`;
+  fichaBtn.style.display=FICHA.length?"block":"none";fichaBtn.textContent=`Mi ficha (${FICHA.length})`;
   app.innerHTML=`<div class="card">
-    <div class="crumbs">📄 ${D.nombre}</div>
+    <div class="crumbs">${D.nombre}</div>
     <h2>La pregunta grande de tu proyecto</h2>
     <p class="muted">¿Qué quieren averiguar? La respondés con varias consultas.</p>
     <label>Pregunta del proyecto</label>
@@ -235,14 +235,14 @@ const val=id=>{const e=document.getElementById(id);return e?e.value:""};
 /* ===================== WIZARD ===================== */
 function buildShell(inner){
   if(PRACTICE){fichaBtn.style.display="none";}
-  else{fichaBtn.style.display="block";fichaBtn.textContent=`📋 Mi ficha (${FICHA.length})`;}
+  else{fichaBtn.style.display="block";fichaBtn.textContent=`Mi ficha (${FICHA.length})`;}
   const allSteps=["q","filters","op","run","interpret"],labels={q:"Pregunta",filters:"Filtros",op:"Operación",run:"Ejecutar",interpret:"Interpretar"};
   const steps=PRACTICE?allSteps.filter(s=>s!=="q"&&s!=="interpret"):allSteps;
-  const banner=PRACTICE?`<div class="banner">🎯 Ejercicio ${PRACTICE.idx+1}/${CHALLENGES.length} · <span class="muted">${CHALLENGES[PRACTICE.idx].title}</span>
-    <div class="qq">❓ ${B.q}</div>
+  const banner=PRACTICE?`<div class="banner">Ejercicio ${PRACTICE.idx+1}/${CHALLENGES.length} · <span class="muted">${CHALLENGES[PRACTICE.idx].title}</span>
+    <div class="qq">${B.q}</div>
     <div class="muted" style="font-size:.78rem;margin-top:6px">Columnas: ${D.cols.map(c=>`<b>${c.k}</b> (${c.t==="num"?"número":"texto"})`).join(" · ")}</div></div>`:"";
   app.innerHTML=`<div class="card">
-    <div class="crumbs">📄 ${D.nombre}${PRACTICE?"":` · Consulta #${FICHA.length+1}`}</div>
+    <div class="crumbs">${D.nombre}${PRACTICE?"":` · Consulta #${FICHA.length+1}`}</div>
     ${banner}
     <div class="row noprint" style="gap:4px">${steps.map(s=>`<span class="pill" style="${s===bstep?'background:var(--accent);color:#0f172a':''}">${labels[s]}</span>`).join("")}</div>
     ${inner}</div>`;
@@ -255,7 +255,7 @@ function colSample(c){
   const vs=uniq(c.k).slice(0,3);return vs.join(", ")+(uniq(c.k).length>3?"…":"");
 }
 function colsPanel(){return `<div class="hint" style="text-align:left">
-    🗂️ <b>Tus datos tienen estas columnas.</b> Mirálas para que se te ocurra qué preguntar:
+    <b>Tus datos tienen estas columnas.</b> Mirálas para que se te ocurra qué preguntar:
     <div style="margin-top:8px;display:flex;flex-direction:column;gap:4px">
     ${D.cols.map(c=>`<div><span class="pill">${c.k} <small>(${c.t==="num"?"número":"texto"})</small></span>
       <small class="muted">ej: ${colSample(c)}</small></div>`).join("")}</div></div>`;}
@@ -280,9 +280,9 @@ function stepFilters(){
     <p class="muted">Pregunta: <b>${B.q}</b></p>
     <p class="muted">Un filtro achica la tabla. Podés encadenar <b>varios</b> (se cumplen TODOS) o no poner ninguno.</p>
     ${B.filters.length
-      ? `<div class="chips">${B.filters.map((f,i)=>`<span class="chip">🔎 ${chipFilter(f)} <a onclick="rmFilter(${i})" title="quitar">✕</a></span>`).join('<span class="muted" style="align-self:center">Y</span>')}</div>`
+      ? `<div class="chips">${B.filters.map((f,i)=>`<span class="chip">${chipFilter(f)} <a onclick="rmFilter(${i})" title="quitar">✕</a></span>`).join('<span class="muted" style="align-self:center">Y</span>')}</div>`
       : `<div class="hint">Sin filtros todavía: trabajarías con toda la tabla (${D.data.length} filas).</div>`}
-    <div class="addbox"><b>➕ Agregar un filtro</b>
+    <div class="addbox"><b>Agregar un filtro</b>
       <p class="muted" style="font-size:.8rem;margin:4px 0 8px">columna · operador · valor</p>
       ${filterFormHTML()}
       <button class="btn ghost sm" onclick="addFilter()">+ Agregar este filtro</button></div>
@@ -314,7 +314,7 @@ const recipeFilter=f=>`filtrar( ${f.col} ${RSYM[f.op]} ${f.t==="num"?f.val:'"'+f
 function setVerb(k){B.verb=k;renderBuild();}
 function opForm(v){
   const numC=D.cols.filter(c=>c.t==="num"),catC=D.cols.filter(c=>c.t==="cat");
-  if(v==="ver")return `<div class="hint">👁️ Vas a ver las filas que quedaron después de los filtros. Sin cálculo.</div>`;
+  if(v==="ver")return `<div class="hint">Vas a ver las filas que quedaron después de los filtros. Sin cálculo.</div>`;
   if(v==="sumar")return `<label>¿Qué cálculo?</label>
     <select id="agg"><option value="contar">Contar filas (cuántas hay)</option><option value="suma">Sumar una columna</option><option value="prom">Promediar una columna</option></select>
     <span id="aggcol"></span>`;
@@ -343,9 +343,9 @@ function wireOpForm(){
 function stepOp(){
   const form=B.verb?opForm(B.verb):`<p class="muted">Tocá una operación para elegir qué hacer con esas filas.</p>`;
   buildShell(`<div class="step-label">PASO 3 · ¿Qué hacés con esas filas?</div>
-    ${B.filters.length?`<div class="hint">🔎 Filtros activos: <b>${B.filters.map(chipFilter).join(" Y ")}</b></div>`:`<div class="hint">Sin filtros: usás toda la tabla.</div>`}
+    ${B.filters.length?`<div class="hint">Filtros activos: <b>${B.filters.map(chipFilter).join(" Y ")}</b></div>`:`<div class="hint">Sin filtros: usás toda la tabla.</div>`}
     <div class="opts" style="margin-top:8px">${Object.entries(VERBS).map(([k,v])=>`<button class="opt ${B.verb===k?'sel':''}" onclick="setVerb('${k}')">${v[0]}<span class="vt">${v[1]}</span></button>`).join("")}</div>
-    ${B.hintVerb&&!B.verb?`<div class="hint">💡 <b>Pista:</b> preguntas así suelen resolverse con <b>${(VERBS[B.hintVerb]||VERBS.ver)[0]}</b>.</div>`:""}
+    ${B.hintVerb&&!B.verb?`<div class="hint"><b>Pista:</b> preguntas así suelen resolverse con <b>${(VERBS[B.hintVerb]||VERBS.ver)[0]}</b>.</div>`:""}
     <div id="opform" style="margin-top:6px">${form}</div>
     <button class="btn" onclick="if(!B.verb){alert('Elegí una operación.');return}bstep='run';renderBuild()">Ejecutar la consulta ▶</button>
     <button class="btn ghost" onclick="bstep='filters';renderBuild()">← Volver a filtros</button>`);
@@ -401,19 +401,19 @@ function stepRun(){const res=compute();B._res=res;
   buildShell(`<div class="step-label">PASO 4 · Ejecutando…</div>
     <p class="muted">La consulta que armaste:</p>
     <div class="recipe">${B.recipe}</div>
-    <div class="result"><span class="run-dots">⏳ Ejecutando sobre ${D.data.length} filas</span></div>`);
+    <div class="result"><span class="run-dots">Ejecutando sobre ${D.data.length} filas</span></div>`);
   setTimeout(()=>{if(bstep==="run")showResult(res);},700);
 }
 function showResult(res){
   const body=res.chart?barsHTML(res.chart):`<div class="scrollx">${tableHTML(res.headers,res.outRows)}</div>`;
   const next=PRACTICE
-    ? `<button class="btn" onclick="checkAnswer()">✅ Comprobar mi respuesta</button>`
+    ? `<button class="btn" onclick="checkAnswer()">Comprobar mi respuesta</button>`
     : `<button class="btn" onclick="bstep='interpret';renderBuild()">Interpretar y guardar →</button>`;
   buildShell(`<div class="step-label">PASO 4 · Tu consulta y su resultado</div>
     <p class="muted">La receta que armaste (misma lógica que en Pandalyze):</p>
     <div class="recipe">${B.recipe}</div>
-    <details class="pyc"><summary>🐍 Ver el código Python real (Pandas)</summary><pre>${esc(B.pycode)}</pre></details>
-    <div class="result"><b>📊 Resultado:</b> ${res.summary}${body}</div>
+    <details class="pyc"><summary>Ver el código Python real (Pandas)</summary><pre>${esc(B.pycode)}</pre></details>
+    <div class="result"><b>Resultado:</b> ${res.summary}${body}</div>
     ${res.filters?highlightBlock(res.filters):""}
     ${next}
     <button class="btn ghost" onclick="bstep='op';renderBuild()">← Ajustar la consulta</button>`);
@@ -422,17 +422,17 @@ function highlightBlock(filters){
   const rows=D.data.slice(0,18),heads=D.cols.map(c=>c.k);
   const pass=r=>filters.every(f=>applyFilter([r],f).length>0);
   const nHit=D.data.filter(pass).length;
-  return `<details class="hl"><summary>👁️ Ver qué filas eligieron los filtros (${nHit} de ${D.data.length})</summary>
+  return `<details class="hl"><summary>Ver qué filas eligieron los filtros (${nHit} de ${D.data.length})</summary>
     <div class="muted" style="font-size:.78rem;margin:6px 0">Verde = pasa todos los filtros. Muestro las primeras 18 filas.</div>
     <div class="scrollx"><table class="hlt"><tr>${heads.map(h=>`<th>${h}</th>`).join("")}</tr>
     ${rows.map(r=>`<tr class="${pass(r)?'hit':'miss'}">${heads.map(h=>`<td>${fmt(r[h])}</td>`).join("")}</tr>`).join("")}</table></div></details>`;
 }
 function stepInterpret(){
   buildShell(`<div class="step-label">PASO 5 · ¿Qué significa? (esto va a tu ficha)</div>
-    <div class="recipe">${B.recipe}</div><p class="muted" style="font-size:.82rem">📊 ${B.summary}</p>
+    <div class="recipe">${B.recipe}</div><p class="muted" style="font-size:.82rem">${B.summary}</p>
     <label>Lo que ENCONTRÉ (lo que dicen los datos)</label><input type="text" id="enc" placeholder="Ej: Enero es el mes con más visitantes">
     <label>Lo que SIGNIFICA (mi interpretación)</label><input type="text" id="sig" placeholder="Ej: el verano es la temporada más fuerte de VLA">
-    <button class="btn" onclick="saveEntry()">➕ Agregar a mi ficha</button>
+    <button class="btn" onclick="saveEntry()">Agregar a mi ficha</button>
     <button class="btn ghost" onclick="bstep='run';renderBuild()">← Volver</button>`);
 }
 function saveEntry(){FICHA.push({q:B.q,recipe:B.recipe,summary:B.summary,enc:val("enc"),sig:val("sig")});save();goFicha();}
@@ -479,12 +479,12 @@ function practiceHome(){
   PRACTICE=null;fichaBtn.style.display="none";const done=pdone();
   const n=Object.keys(done).filter(k=>done[k]).length;
   app.innerHTML=`<div class="card">
-    <h2>🎯 Practiquemos</h2>
+    <h2>Practiquemos un rato!</h2>
     <p class="muted">Ejercicios con datos de mentira para entrenar a <b>pensar la consulta</b>. Leé la pregunta, armala paso a paso (filtros → operación) y la app te corrige.</p>
-    ${n?`<div class="hint">Llevás ${n}/${CHALLENGES.length} resueltos. 💪</div>`:""}
+    ${n?`<div class="hint">Llevás ${n}/${CHALLENGES.length} resueltos. </div>`:""}
     ${CHALLENGES.map((ch,i)=>`<div class="chal" onclick="startChallenge(${i})">
-      <div class="ct">${done[i]?"✅ ":`${i+1}. `}${ch.question}${done[i]?'<span class="done">resuelto</span>':''}</div>
-      <div class="cd">📄 ${ch.title} — columnas: ${ch.cols.map(c=>c.k).join(", ")}</div></div>`).join("")}
+      <div class="ct">${done[i]?"":`${i+1}. `}${ch.question}${done[i]?'<span class="done">resuelto</span>':''}</div>
+      <div class="cd">${ch.title} — columnas: ${ch.cols.map(c=>c.k).join(", ")}</div></div>`).join("")}
     <button class="btn ghost" onclick="home()">← Volver al inicio</button>
   </div>`;
 }
@@ -507,34 +507,34 @@ function showVerdict(ok,ch){
   const last=PRACTICE.idx+1>=CHALLENGES.length;
   buildShell(`<div class="step-label">Corrección</div>
     <div class="recipe">${B.recipe}</div>
-    <div class="result"><b>📊 Tu resultado:</b> ${res.summary}${body}</div>
-    <div class="verdict ${ok?'ok':'no'}">${ok?'✅ ¡Correcto! Esa consulta responde la pregunta.':'❌ Todavía no.<br><br>💡 <b>Pista:</b> '+ch.hint}</div>
+    <div class="result"><b>Tu resultado:</b> ${res.summary}${body}</div>
+    <div class="verdict ${ok?'ok':'no'}">${ok?'¡Correcto! Esa consulta responde la pregunta.':'Todavía no.<br><br><b>Pista:</b> '+ch.hint}</div>
     ${ok
-      ? (last?`<div class="hint">🎉 ¡Completaste todos los ejercicios!</div><button class="btn" onclick="practiceHome()">Volver a la lista</button>`
+      ? (last?`<div class="hint">¡Completaste todos los ejercicios!</div><button class="btn" onclick="practiceHome()">Volver a la lista</button>`
              :`<button class="btn" onclick="startChallenge(${PRACTICE.idx+1})">Siguiente ejercicio →</button><button class="btn ghost" onclick="practiceHome()">Volver a la lista</button>`)
-      : `<button class="btn" onclick="bstep='filters';renderBuild()">↺ Probá de nuevo</button><button class="btn ghost" onclick="practiceHome()">Salir de la práctica</button>`}`);
+      : `<button class="btn" onclick="bstep='filters';renderBuild()">Probá de nuevo</button><button class="btn ghost" onclick="practiceHome()">Salir de la práctica</button>`}`);
 }
 
 /* ===================== FICHA ===================== */
 function goFicha(){
-  fichaBtn.style.display="block";fichaBtn.textContent=`📋 Mi ficha (${FICHA.length})`;
+  fichaBtn.style.display="block";fichaBtn.textContent=`Mi ficha (${FICHA.length})`;
   app.innerHTML=`<div class="card" id="ficha">
-    <h2>📋 Ficha de proyecto · VLA en datos</h2>
+    <h2>Ficha de proyecto · VLA en datos</h2>
     <p><b>Pregunta del proyecto:</b> ${PROY.bigQ||"<span class='muted'>(sin definir)</span>"}</p>
     <p><b>Grupo:</b> ${PROY.grupo||"—"} · <b>Dataset:</b> ${D?D.nombre:"—"}</p>
     <hr style="border-color:#334155"><h3>Nuestras consultas (${FICHA.length})</h3>
     ${FICHA.length?FICHA.map((e,i)=>`<div class="fentry"><div class="q">${i+1}. ${e.q}</div>
-      <div class="r">${e.recipe}</div><div style="font-size:.85rem">📊 ${e.summary}</div>
+      <div class="r">${e.recipe}</div><div style="font-size:.85rem">${e.summary}</div>
       ${e.enc?`<div style="font-size:.88rem;margin-top:5px"><b>Encontramos:</b> ${e.enc}</div>`:""}
       ${e.sig?`<div style="font-size:.88rem"><b>Significa:</b> ${e.sig}</div>`:""}
-      <button class="btn sm ghost noprint" style="margin-top:6px" onclick="delEntry(${i})">🗑️ quitar</button></div>`).join(""):`<p class="muted">Todavía no agregaste consultas.</p>`}
+      <button class="btn sm ghost noprint" style="margin-top:6px" onclick="delEntry(${i})">quitar</button></div>`).join(""):`<p class="muted">Todavía no agregaste consultas.</p>`}
     <div class="noprint">
-      <button class="btn" onclick="B={q:'',verb:null};bstep='q';renderBuild()">➕ Armar otra consulta</button>
+      <button class="btn" onclick="B={q:'',verb:null};bstep='q';renderBuild()">Armar otra consulta</button>
       <div class="row" style="margin-top:6px">
-        <button class="btn sm ghost" onclick="window.print()">🖨️ Imprimir / PDF</button>
-        <button class="btn sm ghost" onclick="copyFicha()">📋 Copiar texto</button>
-        <button class="btn sm ghost" onclick="setupProyecto()">⚙️ Proyecto</button>
-        <button class="btn sm ghost" onclick="home()">🏠 Inicio</button>
+        <button class="btn sm ghost" onclick="window.print()">Imprimir / PDF</button>
+        <button class="btn sm ghost" onclick="copyFicha()">Copiar texto</button>
+        <button class="btn sm ghost" onclick="setupProyecto()">Proyecto</button>
+        <button class="btn sm ghost" onclick="home()">Inicio</button>
       </div></div></div>`;
 }
 function delEntry(i){FICHA.splice(i,1);save();goFicha();}
