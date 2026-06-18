@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="es-AR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Constructor de Consultas · VLA en datos</title>
+<style>
+  :root{--bg:#0f172a;--card:#1e293b;--card2:#273449;--txt:#e2e8f0;--muted:#94a3b8;
+    --accent:#38bdf8;--good:#34d399;--bad:#f87171;--warn:#fbbf24;--b1:#a78bfa;--b2:#f472b6}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+    background:linear-gradient(160deg,#0f172a,#1e1b4b);color:var(--txt);min-height:100vh}
+  header{padding:16px;text-align:center;position:relative}
+  header h1{margin:0;font-size:1.4rem;background:linear-gradient(90deg,var(--accent),var(--b1),var(--b2));
+    -webkit-background-clip:text;background-clip:text;color:transparent}
+  header p{margin:3px 0 0;color:var(--muted);font-size:.85rem}
+  .fichaBtn{position:absolute;right:12px;top:14px;background:var(--card2);color:var(--txt);border:1px solid #3a4a63;
+    border-radius:99px;padding:7px 13px;font-size:.82rem;cursor:pointer}
+  .wrap{max-width:700px;margin:0 auto;padding:8px 16px 50px}
+  .card{background:var(--card);border-radius:16px;padding:20px;box-shadow:0 8px 30px rgba(0,0,0,.3);margin-bottom:16px}
+  h2{margin:.2em 0 .5em;font-size:1.2rem}h3{font-size:1rem}
+  .muted{color:var(--muted)}
+  label{display:block;font-size:.85rem;color:var(--muted);margin:12px 0 5px;font-weight:600}
+  input[type=text],select{width:100%;background:#0b1220;color:var(--txt);border:1px solid #334155;border-radius:10px;
+    padding:11px;font-size:1rem;font-family:inherit}
+  .step-label{font-size:.8rem;color:var(--warn);margin:6px 0 8px;font-weight:700;letter-spacing:.3px}
+  .opts{display:grid;gap:10px}
+  button.opt{background:var(--card2);color:var(--txt);border:2px solid transparent;border-radius:12px;padding:13px;
+    font-size:1rem;text-align:left;cursor:pointer;transition:.15s;font-family:inherit}
+  button.opt:hover{border-color:var(--accent)}button.opt.sel{border-color:var(--accent);background:rgba(56,189,248,.13)}
+  button.opt .vt{font-size:.74rem;color:var(--muted);display:block;margin-top:3px}
+  .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:8px}
+  .row > *{flex:1;min-width:110px}
+  .btn{background:linear-gradient(90deg,var(--accent),var(--b1));color:#0f172a;font-weight:700;border:none;
+    border-radius:12px;padding:14px;font-size:1.02rem;cursor:pointer;width:100%;margin-top:8px;font-family:inherit}
+  .btn.ghost{background:var(--card2);color:var(--txt);border:1px solid #3a4a63}
+  .btn.sm{padding:10px;font-size:.9rem;width:auto}
+  .uploadbox{border:2px dashed #3a4a63;border-radius:14px;padding:26px;text-align:center;cursor:pointer;transition:.15s}
+  .uploadbox:hover{border-color:var(--accent);background:rgba(56,189,248,.05)}
+  .recipe{background:#0b1220;border:1px solid #334155;border-radius:10px;padding:12px;font-family:ui-monospace,Menlo,monospace;
+    font-size:.86rem;color:var(--accent);margin:12px 0;line-height:1.6;word-break:break-word}
+  .result{background:#0b1220;border-radius:10px;padding:14px;margin-top:10px}
+  table{width:100%;border-collapse:collapse;font-size:.85rem}
+  th,td{text-align:left;padding:5px 8px;border-bottom:1px solid #1e293b}th{color:var(--muted)}
+  .bars{display:flex;flex-direction:column;gap:6px;margin-top:6px}
+  .barrow{display:flex;align-items:center;gap:8px;font-size:.82rem}
+  .barrow .lab{width:34%;text-align:right;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .barrow .bo{flex:1;background:#1e293b;border-radius:6px;overflow:hidden}
+  .barrow .bi{height:18px;background:linear-gradient(90deg,var(--accent),var(--b1));border-radius:6px}
+  .barrow .vv{width:60px;font-weight:700;color:var(--accent);text-align:right}
+  .pill{display:inline-block;background:var(--card2);border-radius:99px;padding:3px 10px;font-size:.76rem;margin:2px}
+  .hint{background:rgba(251,191,36,.1);border-left:3px solid var(--warn);padding:10px;border-radius:8px;font-size:.85rem;margin-top:8px}
+  .fentry{background:var(--card2);border-radius:12px;padding:14px;margin-bottom:10px}
+  .fentry .q{font-weight:700}.fentry .r{font-size:.82rem;color:var(--accent);font-family:ui-monospace,monospace;margin:6px 0}
+  .crumbs{font-size:.78rem;color:var(--muted);margin-bottom:8px}
+  .typerow{display:flex;align-items:center;gap:10px;margin-bottom:8px}.typerow .cn{flex:1;font-weight:600}
+  @media print{header,.fichaBtn,.noprint{display:none!important}body{background:#fff;color:#000}
+    .card{box-shadow:none;background:#fff;border:1px solid #ccc}.fentry{background:#f4f4f4}.r{color:#06c}}
+</style>
+</head>
+<body>
+<header>
+  <h1>🧱 Constructor de Consultas</h1>
+  <p>VLA en datos · armá tu consulta paso a paso y construí tu ficha</p>
+  <button class="fichaBtn" id="fichaBtn" onclick="goFicha()" style="display:none"></button>
+</header>
+<div class="wrap" id="app"></div>
+
+<script>
+/* ===================== ESTADO GLOBAL ===================== */
+let D=null;                 // dataset activo {nombre,file,cols:[{k,t}],data:[obj],sugs:[[texto,verbo]]}
+let PROY={bigQ:"",grupo:""};
+let FICHA=[];
+let B={};                   // construcción actual
+let bstep="q";
+const app=document.getElementById("app"),fichaBtn=document.getElementById("fichaBtn");
+const KEY="vla_constructor_v1";
+
+const VERBS={
+ filtrar:["🔎 Filtrar","quedarme con algunas filas"],
+ sumar:["➕ Contar / Sumar / Promediar","calcular un número de una columna"],
+ ordenar:["↕️ Ordenar","la que más / la que menos"],
+ agrupar:["🗂️ Agrupar","juntar por categoría y resumir"],
+ graficar:["📈 Graficar","comparar o ver cómo cambia"]
+};
+const OPS={eq:"==",ne:"≠",gt:">",lt:"<",ge:"≥",le:"≤"};
+const RSYM={eq:"==",ne:"!=",gt:">",lt:"<",ge:">=",le:"<="};
+const uniq=c=>[...new Set(D.data.map(r=>r[c]))];
+const numv=a=>a.map(Number);
+
+/* ===================== PERSISTENCIA ===================== */
+function save(){try{localStorage.setItem(KEY,JSON.stringify({D,PROY,FICHA}))}catch(e){}}
+function load(){try{const s=JSON.parse(localStorage.getItem(KEY));if(s&&s.D){D=s.D;PROY=s.PROY||PROY;FICHA=s.FICHA||[];return true}}catch(e){}return false}
+function reset(){localStorage.removeItem(KEY);D=null;PROY={bigQ:"",grupo:""};FICHA=[];home()}
+
+/* ===================== PARSEO CSV ===================== */
+function parseCSV(text){
+  const lines=text.replace(/\r/g,"").split("\n").filter(l=>l.trim().length);
+  const split=l=>{const out=[];let cur="",q=false;
+    for(let i=0;i<l.length;i++){const ch=l[i];
+      if(ch==='"'){if(q&&l[i+1]==='"'){cur+='"';i++}else q=!q}
+      else if(ch===","&&!q){out.push(cur);cur=""}else cur+=ch}
+    out.push(cur);return out.map(s=>s.trim())};
+  const headers=split(lines[0]);
+  const rows=lines.slice(1).map(split);
+  const cols=headers.map((h,i)=>{
+    const vals=rows.map(r=>r[i]).filter(v=>v!=="");
+    const isNum=vals.length>0&&vals.every(v=>/^-?\d+([.,]\d+)?$/.test(v.replace(/\s/g,"")));
+    return {k:h,t:isNum?"num":"cat"};
+  });
+  const data=rows.map(r=>{const o={};headers.forEach((h,i)=>{
+    let v=r[i]!==undefined?r[i]:"";
+    if(cols[i].t==="num")v=parseFloat(v.replace(/\s/g,"").replace(",","."));
+    o[h]=v;});return o;});
+  return {cols,data};
+}
+function genSugs(cols){
+  const n=cols.filter(c=>c.t==="num"),c=cols.filter(c=>c.t==="cat"),s=[];
+  if(n.length)s.push([`¿Cuál es el/la de mayor ${n[0].k}?`,"ordenar"]);
+  if(n.length)s.push([`¿Cuánto suman los ${n[0].k}?`,"sumar"]);
+  if(c.length)s.push([`¿Cuántas filas hay de cada ${c[0].k}?`,"agrupar"]);
+  if(c.length)s.push([`Mostrame solo las filas donde ${c[0].k} sea cierto valor`,"filtrar"]);
+  if(n.length)s.push([`Graficar ${n[0].k}`,"graficar"]);
+  return s;
+}
+
+/* ===================== HOME / CARGA ===================== */
+function home(){
+  fichaBtn.style.display="none";
+  const hasSaved=(()=>{try{const s=JSON.parse(localStorage.getItem(KEY));return s&&s.D}catch(e){return false}})();
+  app.innerHTML=`<div class="card">
+    <h2>Empecemos</h2>
+    <p class="muted">Cargá un archivo <b>CSV</b> con tus datos (de turismo, biodiversidad, lo que sea). La app detecta sola las columnas.</p>
+    <div class="uploadbox" id="up"><div style="font-size:2rem">📂</div>
+      <div style="margin-top:6px;font-weight:700">Cargar CSV</div>
+      <div class="muted" style="font-size:.82rem">Tocá acá y elegí tu archivo .csv</div>
+      <input type="file" id="file" accept=".csv,text/csv" style="display:none"></div>
+    <button class="btn ghost" onclick="loadDemo()">Probar con datos de ejemplo</button>
+    ${hasSaved?`<button class="btn" onclick="if(load())setupProyecto()">▶ Continuar mi proyecto guardado</button>
+      <button class="btn ghost" onclick="reset()">🗑️ Borrar y empezar de cero</button>`:""}
+  </div>`;
+  const up=document.getElementById("up"),file=document.getElementById("file");
+  up.onclick=()=>file.click();
+  file.onchange=e=>{const f=e.target.files[0];if(!f)return;const rd=new FileReader();
+    rd.onload=ev=>{try{const p=parseCSV(ev.target.result);
+      D={nombre:f.name,file:f.name.replace(/\.csv$/i,""),cols:p.cols,data:p.data};
+      confirmTypes();}catch(err){alert("No pude leer el CSV. Revisá que sea separado por comas.")}};
+    rd.readAsText(f);};
+}
+function loadDemo(){
+  const csv=`mes,visitantes,temporada,ocupacion,precio
+Enero,9200,Alta verano,88,45000
+Febrero,8500,Alta verano,82,43000
+Marzo,6800,Media,65,35000
+Mayo,1500,Baja,22,20000
+Julio,7800,Alta invierno,90,48000
+Septiembre,2200,Media,32,26000
+Noviembre,5200,Alta,60,33000`;
+  const p=parseCSV(csv);D={nombre:"ejemplo-turismo.csv",file:"ejemplo-turismo",cols:p.cols,data:p.data};confirmTypes();
+}
+
+/* ===================== CONFIRMAR TIPOS ===================== */
+function confirmTypes(){
+  fichaBtn.style.display="none";
+  app.innerHTML=`<div class="card">
+    <div class="crumbs">📄 ${D.nombre} · ${D.data.length} filas</div>
+    <h2>¿Está bien el tipo de cada columna?</h2>
+    <p class="muted">Texto = categoría (C) · Número = cuantitativa (Q).</p>
+    <div class="hint">💡 Ojo: a veces una columna de <b>números no es cuantitativa</b> (un código, un ID, a veces el año). Si no tiene sentido promediarla, ponela como <b>texto</b>.</div>
+    <div style="margin-top:14px">${D.cols.map((c,i)=>`<div class="typerow">
+      <span class="cn">${c.k}</span>
+      <select onchange="D.cols[${i}].t=this.value">
+        <option value="cat" ${c.t==="cat"?"selected":""}>texto (categoría)</option>
+        <option value="num" ${c.t==="num"?"selected":""}>número (cuantitativa)</option></select>
+    </div>`).join("")}</div>
+    <button class="btn" onclick="afterTypes()">Confirmar →</button>
+    <button class="btn ghost" onclick="home()">← Cargar otro</button>
+  </div>`;
+}
+function afterTypes(){
+  // re-castear data según tipos confirmados
+  D.data=D.data.map(r=>{const o={...r};D.cols.forEach(c=>{o[c.k]=c.t==="num"?parseFloat(String(r[c.k]).replace(/\s/g,"").replace(",","."))||0:String(r[c.k]);});return o;});
+  D.sugs=genSugs(D.cols);save();setupProyecto();
+}
+
+/* ===================== SETUP PROYECTO ===================== */
+function setupProyecto(){
+  fichaBtn.style.display=FICHA.length?"block":"none";fichaBtn.textContent=`📋 Mi ficha (${FICHA.length})`;
+  app.innerHTML=`<div class="card">
+    <div class="crumbs">📄 ${D.nombre}</div>
+    <h2>La pregunta grande de tu proyecto</h2>
+    <p class="muted">¿Qué quieren averiguar? La respondés con varias consultas.</p>
+    <label>Pregunta del proyecto</label>
+    <input type="text" id="bigQ" placeholder="Ej: ¿Cómo cambia el turismo de VLA según la época?" value="${PROY.bigQ}">
+    <label>Grupo / integrantes</label>
+    <input type="text" id="grupo" placeholder="Nombres" value="${PROY.grupo}">
+    <button class="btn" onclick="startBuild()">Empezar a construir consultas →</button>
+    ${FICHA.length?`<button class="btn ghost" onclick="goFicha()">Ver mi ficha (${FICHA.length})</button>`:""}
+    <div style="margin-top:12px"><span class="muted" style="font-size:.8rem">Columnas:</span><br>
+      ${D.cols.map(c=>`<span class="pill">${c.k} <small>(${c.t==="num"?"número":"texto"})</small></span>`).join("")}</div>
+  </div>`;
+}
+function startBuild(){PROY.bigQ=val("bigQ");PROY.grupo=val("grupo");save();B={q:"",verb:null};bstep="q";renderBuild();}
+const val=id=>{const e=document.getElementById(id);return e?e.value:""};
+
+/* ===================== WIZARD ===================== */
+function buildShell(inner){
+  fichaBtn.style.display="block";fichaBtn.textContent=`📋 Mi ficha (${FICHA.length})`;
+  const steps=["q","verb","pieces","run","interpret"],labels={q:"Pregunta",verb:"Verbo",pieces:"Piezas",run:"Ejecutar",interpret:"Interpretar"};
+  app.innerHTML=`<div class="card">
+    <div class="crumbs">📄 ${D.nombre} · Consulta #${FICHA.length+1}</div>
+    <div class="row noprint" style="gap:4px">${steps.map(s=>`<span class="pill" style="${s===bstep?'background:var(--accent);color:#0f172a':''}">${labels[s]}</span>`).join("")}</div>
+    ${inner}</div>`;
+}
+function renderBuild(){({q:stepQ,verb:stepVerb,pieces:stepPieces,run:stepRun,interpret:stepInterpret}[bstep])();}
+
+function colSample(c){
+  if(c.t==="num"){const ns=D.data.map(r=>parseFloat(r[c.k])).filter(v=>!isNaN(v));
+    if(!ns.length)return"";return `de ${Math.min(...ns)} a ${Math.max(...ns)}`;}
+  const vs=uniq(c.k).slice(0,3);return vs.join(", ")+(uniq(c.k).length>3?"…":"");
+}
+function colsPanel(){return `<div class="hint" style="text-align:left">
+    🗂️ <b>Tus datos tienen estas columnas.</b> Mirálas para que se te ocurra qué preguntar:
+    <div style="margin-top:8px;display:flex;flex-direction:column;gap:4px">
+    ${D.cols.map(c=>`<div><span class="pill">${c.k} <small>(${c.t==="num"?"número":"texto"})</small></span>
+      <small class="muted">ej: ${colSample(c)}</small></div>`).join("")}</div></div>`;}
+function stepQ(){
+  buildShell(`<div class="step-label">PASO 1 · ¿Qué querés averiguar con esta consulta?</div>
+    ${colsPanel()}
+    <p class="muted">Elegí una idea o escribí la tuya.</p>
+    <div class="opts">${D.sugs.map((s,i)=>`<button class="opt" onclick="setQ(${i})">${s[0]}</button>`).join("")}</div>
+    <label>…o escribí tu propia pregunta</label><input type="text" id="ownQ" placeholder="Tu pregunta">
+    <button class="btn" onclick="setQ(-1)">Seguir →</button>
+    <button class="btn ghost" onclick="setupProyecto()">← Volver</button>`);
+}
+function setQ(i){
+  if(i>=0){B.q=D.sugs[i][0];B.hintVerb=D.sugs[i][1];}
+  else{const v=val("ownQ").trim();if(!v){alert("Escribí tu pregunta o elegí una.");return}B.q=v;B.hintVerb=null;}
+  bstep="verb";renderBuild();
+}
+function stepVerb(){
+  buildShell(`<div class="step-label">PASO 2 · ¿Qué verbo responde "${B.q}"?</div>
+    <div class="opts">${Object.entries(VERBS).map(([k,v])=>`<button class="opt ${B.verb===k?'sel':''}" onclick="setVerb('${k}')">${v[0]}<span class="vt">${v[1]}</span></button>`).join("")}</div>
+    ${B.hintVerb?`<div class="hint">💡 <b>Pista:</b> preguntas así suelen resolverse con <b>${VERBS[B.hintVerb][0]}</b>.</div>`:""}
+    <button class="btn ghost" onclick="bstep='q';renderBuild()">← Volver</button>`);
+}
+function setVerb(k){B.verb=k;bstep="pieces";renderBuild();}
+
+/* ---- filtro reutilizable ---- */
+function filterFormHTML(){return `<div class="row">
+  <select id="f_col">${D.cols.map(c=>`<option value="${c.k}">${c.k}</option>`).join("")}</select>
+  <select id="f_op"></select><span id="f_val" style="flex:1.4"></span></div>`;}
+function wireFilter(){
+  const cs=document.getElementById("f_col");
+  const upd=()=>{const c=D.cols.find(x=>x.k===cs.value);
+    document.getElementById("f_op").innerHTML=(c.t==="num"?["gt","lt","ge","le","eq"]:["eq","ne"]).map(o=>`<option value="${o}">${OPS[o]}</option>`).join("");
+    document.getElementById("f_val").innerHTML=c.t==="num"?`<input type="text" id="f_v" inputmode="numeric" placeholder="número">`:`<select id="f_v">${uniq(c.k).map(v=>`<option>${v}</option>`).join("")}</select>`;};
+  cs.onchange=upd;upd();
+}
+function readFilter(){const col=val("f_col"),c=D.cols.find(x=>x.k===col);return {col,t:c.t,op:val("f_op"),val:val("f_v")};}
+function applyFilter(rows,f){const v=f.t==="num"?parseFloat(f.val):f.val;
+  return rows.filter(r=>{const c=r[f.col];return {eq:c==v,ne:c!=v,gt:c>v,lt:c<v,ge:c>=v,le:c<=v}[f.op];});}
+const recipeFilter=f=>`filtrar( ${f.col} ${RSYM[f.op]} ${f.t==="num"?f.val:'"'+f.val+'"'} )`;
+
+function stepPieces(){
+  const numC=D.cols.filter(c=>c.t==="num"),catC=D.cols.filter(c=>c.t==="cat");
+  let form="";
+  if(B.verb==="filtrar")form=`<p class="muted">Condición: <b>columna · operador · valor</b>.</p>${filterFormHTML()}`;
+  else if(B.verb==="sumar")form=`<label>¿Qué cálculo?</label>
+    <select id="agg"><option value="contar">Contar filas (cuántas hay)</option><option value="suma">Sumar una columna</option><option value="prom">Promediar una columna</option></select>
+    <span id="aggcol"></span><label><input type="checkbox" id="useF"> Solo algunas filas (filtrar antes)</label>
+    <div id="fwrap" style="display:none">${filterFormHTML()}</div>`;
+  else if(B.verb==="ordenar")form=`<label>Ordenar por</label><select id="ocol">${numC.map(c=>`<option>${c.k}</option>`).join("")}</select>
+    <label>Dirección</label><select id="odir"><option value="desc">de mayor a menor (la que más)</option><option value="asc">de menor a mayor (la que menos)</option></select>
+    <label>Mostrar las primeras</label><select id="otop">${[1,3,5,10].map(n=>`<option ${n===5?"selected":""}>${n}</option>`).join("")}</select>`;
+  else if(B.verb==="agrupar")form=`<label>Agrupar por</label><select id="gcol">${catC.map(c=>`<option>${c.k}</option>`).join("")}</select>
+    <label>Resumir con</label><select id="gagg"><option value="contar">Contar cuántas hay</option><option value="suma">Sumar una columna</option></select><span id="gcolval"></span>`;
+  else if(B.verb==="graficar")form=`<label>Tipo</label><select id="gt"><option value="barras">Barras (comparar)</option><option value="lineas">Líneas (cómo cambia)</option></select>
+    <label>Eje X</label><select id="gx">${D.cols.map(c=>`<option>${c.k}</option>`).join("")}</select>
+    <label>Eje Y (número)</label><select id="gy">${numC.map(c=>`<option>${c.k}</option>`).join("")}</select>`;
+  if(!numC.length&&(B.verb==="ordenar"||B.verb==="graficar"))form=`<div class="hint">Este dataset no tiene columnas numéricas para este verbo. Probá otro verbo.</div>`;
+  if(!catC.length&&B.verb==="agrupar")form=`<div class="hint">Este dataset no tiene columnas de texto para agrupar. Probá otro verbo.</div>`;
+  buildShell(`<div class="step-label">PASO 3 · Armá las piezas de la consulta</div>${form}
+    <button class="btn" onclick="bstep='run';renderBuild()">Ejecutar la consulta ▶</button>
+    <button class="btn ghost" onclick="bstep='verb';renderBuild()">← Cambiar verbo</button>`);
+  if(B.verb==="filtrar")wireFilter();
+  if(B.verb==="sumar"){const agg=document.getElementById("agg"),ac=document.getElementById("aggcol");
+    const numC2=D.cols.filter(c=>c.t==="num");
+    const u=()=>ac.innerHTML=agg.value==="contar"?"":`<label>Columna</label><select id="acol">${numC2.map(c=>`<option>${c.k}</option>`).join("")}</select>`;
+    agg.onchange=u;u();
+    document.getElementById("useF").onchange=e=>{document.getElementById("fwrap").style.display=e.target.checked?"block":"none";if(e.target.checked)wireFilter();};}
+  if(B.verb==="agrupar"){const ga=document.getElementById("gagg"),gv=document.getElementById("gcolval"),numC2=D.cols.filter(c=>c.t==="num");
+    const u=()=>gv.innerHTML=ga.value==="suma"?`<label>Sumar la columna</label><select id="gvcol">${numC2.map(c=>`<option>${c.k}</option>`).join("")}</select>`:"";
+    ga.onchange=u;u();}
+}
+
+/* ===================== EJECUTAR ===================== */
+function compute(){
+  let rows=D.data.slice(),recipe=[`read_csv(${D.file})`],headers=D.cols.map(c=>c.k),outRows=null,chart=null,summary="";
+  try{
+  if(B.verb==="filtrar"){const f=readFilter();rows=applyFilter(rows,f);recipe.push(recipeFilter(f));outRows=rows;summary=`${rows.length} filas cumplen la condición.`;}
+  else if(B.verb==="sumar"){const agg=val("agg");
+    if(document.getElementById("useF")&&document.getElementById("useF").checked){const f=readFilter();rows=applyFilter(rows,f);recipe.push(recipeFilter(f));}
+    if(agg==="contar"){recipe.push("contar_filas()");summary=`Resultado: ${rows.length} filas.`;outRows=[["cantidad",rows.length]];headers=null;}
+    else{const col=val("acol"),vals=numv(rows.map(r=>r[col]));
+      if(agg==="suma"){const s=vals.reduce((a,b)=>a+b,0);recipe.push(`suma( ${col} )`);summary=`Total de ${col}: ${fmt(s)}.`;outRows=[["suma("+col+")",s]];}
+      else{const m=vals.reduce((a,b)=>a+b,0)/(vals.length||1);recipe.push(`promedio( ${col} )`);summary=`Promedio de ${col}: ${fmt(Math.round(m*10)/10)}.`;outRows=[["promedio("+col+")",Math.round(m*10)/10]];}
+      headers=null;}}
+  else if(B.verb==="ordenar"){const col=val("ocol"),dir=val("odir"),top=+val("otop");
+    rows.sort((a,b)=>dir==="desc"?b[col]-a[col]:a[col]-b[col]);rows=rows.slice(0,top);
+    recipe.push(`.sort_values(${col}, ascending=${dir==="asc"})`,`.head(${top})`);outRows=rows;
+    summary=`1°: ${rows[0][D.cols[0].k]} (${col} = ${fmt(rows[0][col])}).`;}
+  else if(B.verb==="agrupar"){const by=val("gcol"),agg=val("gagg"),g={};
+    rows.forEach(r=>{(g[r[by]]=g[r[by]]||[]).push(r)});recipe.push(`agrupar_por( ${by} )`);let pairs;
+    if(agg==="suma"){const vc=val("gvcol");recipe.push(`suma( ${vc} )`);pairs=Object.entries(g).map(([k,v])=>[k,numv(v.map(r=>r[vc])).reduce((a,b)=>a+b,0)]);headers=[by,"suma("+vc+")"];}
+    else{recipe.push("contar_filas()");pairs=Object.entries(g).map(([k,v])=>[k,v.length]);headers=[by,"cantidad"];}
+    pairs.sort((a,b)=>b[1]-a[1]);outRows=pairs;chart=pairs;summary=`${pairs[0][0]} es la categoría más alta (${fmt(pairs[0][1])}).`;}
+  else if(B.verb==="graficar"){const tipo=val("gt"),x=val("gx"),y=val("gy");let pairs=rows.map(r=>[r[x],r[y]]);
+    if(tipo==="barras"){pairs.sort((a,b)=>b[1]-a[1]);pairs=pairs.slice(0,12);}else pairs=pairs.slice(0,18);
+    recipe.push(`gráfico de ${tipo}: X=${x}, Y=${y}`);chart=pairs;headers=null;summary=`Gráfico de ${y} por ${x}.`;}
+  }catch(e){summary="Faltó completar alguna pieza. Volvé y revisá.";}
+  B.recipe="print( "+recipe.join(" → ")+" )";B.summary=summary;
+  return {headers,outRows,chart,summary};
+}
+const fmt=n=>(typeof n==="number"?n.toLocaleString("es-AR"):n);
+function barsHTML(p){const max=Math.max(...p.map(x=>+x[1]))||1;
+  return `<div class="bars">${p.map(x=>`<div class="barrow"><span class="lab">${x[0]}</span><span class="bo"><span class="bi" style="width:${Math.max(4,(+x[1]/max)*100)}%"></span></span><span class="vv">${fmt(+x[1])}</span></div>`).join("")}</div>`;}
+function tableHTML(headers,rows){
+  if(!headers)return `<table>${rows.map(r=>`<tr><th>${r[0]}</th><td style="font-weight:700;color:var(--accent)">${fmt(r[1])}</td></tr>`).join("")}</table>`;
+  const show=rows.slice(0,12);
+  return `<table><tr>${headers.map(h=>`<th>${h}</th>`).join("")}</tr>${show.map(r=>`<tr>${(Array.isArray(r)?r:D.cols.map(c=>r[c.k])).map(c=>`<td>${fmt(c)}</td>`).join("")}</tr>`).join("")}</table>${rows.length>12?`<p class="muted" style="margin:6px 0 0">…y ${rows.length-12} filas más.</p>`:""}`;
+}
+function stepRun(){const res=compute();const body=res.chart?barsHTML(res.chart):tableHTML(res.headers,res.outRows);
+  buildShell(`<div class="step-label">PASO 4 · Tu consulta y su resultado</div>
+    <p class="muted">La receta que armaste (misma lógica que en Pandalyze):</p>
+    <div class="recipe">${B.recipe}</div>
+    <div class="result"><b>📊 Resultado:</b> ${res.summary}${body}</div>
+    <button class="btn" onclick="bstep='interpret';renderBuild()">Interpretar y guardar →</button>
+    <button class="btn ghost" onclick="bstep='pieces';renderBuild()">← Ajustar piezas</button>`);
+}
+function stepInterpret(){
+  buildShell(`<div class="step-label">PASO 5 · ¿Qué significa? (esto va a tu ficha)</div>
+    <div class="recipe">${B.recipe}</div><p class="muted" style="font-size:.82rem">📊 ${B.summary}</p>
+    <label>Lo que ENCONTRÉ (lo que dicen los datos)</label><input type="text" id="enc" placeholder="Ej: Enero es el mes con más visitantes">
+    <label>Lo que SIGNIFICA (mi interpretación)</label><input type="text" id="sig" placeholder="Ej: el verano es la temporada más fuerte de VLA">
+    <button class="btn" onclick="saveEntry()">➕ Agregar a mi ficha</button>
+    <button class="btn ghost" onclick="bstep='run';renderBuild()">← Volver</button>`);
+}
+function saveEntry(){FICHA.push({q:B.q,recipe:B.recipe,summary:B.summary,enc:val("enc"),sig:val("sig")});save();goFicha();}
+
+/* ===================== FICHA ===================== */
+function goFicha(){
+  fichaBtn.style.display="block";fichaBtn.textContent=`📋 Mi ficha (${FICHA.length})`;
+  app.innerHTML=`<div class="card" id="ficha">
+    <h2>📋 Ficha de proyecto · VLA en datos</h2>
+    <p><b>Pregunta del proyecto:</b> ${PROY.bigQ||"<span class='muted'>(sin definir)</span>"}</p>
+    <p><b>Grupo:</b> ${PROY.grupo||"—"} · <b>Dataset:</b> ${D?D.nombre:"—"}</p>
+    <hr style="border-color:#334155"><h3>Nuestras consultas (${FICHA.length})</h3>
+    ${FICHA.length?FICHA.map((e,i)=>`<div class="fentry"><div class="q">${i+1}. ${e.q}</div>
+      <div class="r">${e.recipe}</div><div style="font-size:.85rem">📊 ${e.summary}</div>
+      ${e.enc?`<div style="font-size:.88rem;margin-top:5px"><b>Encontramos:</b> ${e.enc}</div>`:""}
+      ${e.sig?`<div style="font-size:.88rem"><b>Significa:</b> ${e.sig}</div>`:""}
+      <button class="btn sm ghost noprint" style="margin-top:6px" onclick="delEntry(${i})">🗑️ quitar</button></div>`).join(""):`<p class="muted">Todavía no agregaste consultas.</p>`}
+    <div class="noprint">
+      <button class="btn" onclick="B={q:'',verb:null};bstep='q';renderBuild()">➕ Armar otra consulta</button>
+      <div class="row" style="margin-top:6px">
+        <button class="btn sm ghost" onclick="window.print()">🖨️ Imprimir / PDF</button>
+        <button class="btn sm ghost" onclick="copyFicha()">📋 Copiar texto</button>
+        <button class="btn sm ghost" onclick="setupProyecto()">⚙️ Proyecto</button>
+        <button class="btn sm ghost" onclick="home()">🏠 Inicio</button>
+      </div></div></div>`;
+}
+function delEntry(i){FICHA.splice(i,1);save();goFicha();}
+function copyFicha(){let t=`FICHA DE PROYECTO - VLA en datos\nPregunta: ${PROY.bigQ}\nGrupo: ${PROY.grupo}\nDataset: ${D?D.nombre:""}\n\n`;
+  FICHA.forEach((e,i)=>{t+=`${i+1}. ${e.q}\n   Consulta: ${e.recipe}\n   Resultado: ${e.summary}\n   Encontramos: ${e.enc}\n   Significa: ${e.sig}\n\n`;});
+  (navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>alert("¡Ficha copiada!")).catch(()=>prompt("Copiá tu ficha:",t));}
+
+/* ===================== INICIO ===================== */
+home();
+</script>
+</body>
+</html>
