@@ -39,7 +39,10 @@
   .uploadbox:hover{border-color:var(--accent);background:rgba(56,189,248,.05)}
   .recipe{background:#0b1220;border:1px solid #334155;border-radius:10px;padding:12px;font-family:ui-monospace,Menlo,monospace;
     font-size:.86rem;color:var(--accent);margin:12px 0;line-height:1.6;word-break:break-word}
-  .result{background:#0b1220;border-radius:10px;padding:14px;margin-top:10px}
+  .result{background:#0b1220;border-radius:10px;padding:14px;margin-top:10px;overflow:hidden}
+  .scrollx{overflow-x:auto;-webkit-overflow-scrolling:touch;margin-top:8px;border-radius:8px}
+  .scrollx table{min-width:max-content}
+  .scrollx th,.scrollx td{white-space:nowrap}
   table{width:100%;border-collapse:collapse;font-size:.85rem}
   th,td{text-align:left;padding:5px 8px;border-bottom:1px solid #1e293b}th{color:var(--muted)}
   .bars{display:flex;flex-direction:column;gap:6px;margin-top:6px}
@@ -54,6 +57,30 @@
   .fentry .q{font-weight:700}.fentry .r{font-size:.82rem;color:var(--accent);font-family:ui-monospace,monospace;margin:6px 0}
   .crumbs{font-size:.78rem;color:var(--muted);margin-bottom:8px}
   .typerow{display:flex;align-items:center;gap:10px;margin-bottom:8px}.typerow .cn{flex:1;font-weight:600}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+  .chip{display:inline-flex;align-items:center;gap:6px;background:rgba(56,189,248,.13);border:1px solid var(--accent);
+    border-radius:99px;padding:5px 11px;font-size:.82rem;font-family:ui-monospace,monospace}
+  .chip a{color:var(--bad);cursor:pointer;font-weight:700;text-decoration:none}
+  .addbox{background:var(--card2);border-radius:12px;padding:12px;margin:10px 0}
+  .addbox b{font-size:.85rem}
+  details.pyc,details.hl{background:#0b1220;border:1px solid #334155;border-radius:10px;padding:8px 12px;margin:10px 0}
+  details.pyc summary,details.hl summary{cursor:pointer;font-size:.85rem;color:var(--muted);font-weight:600}
+  details.pyc pre{margin:8px 0 2px;font-family:ui-monospace,Menlo,monospace;font-size:.82rem;color:var(--good);
+    white-space:pre-wrap;word-break:break-word;line-height:1.5}
+  table.hlt tr.hit{background:rgba(52,211,153,.16)}table.hlt tr.hit td{color:var(--good)}
+  table.hlt tr.miss td{color:#475569}
+  .run-dots{display:inline-block;color:var(--accent);font-weight:600}
+  .run-dots::after{content:"";animation:dots 1s steps(4,end) infinite}
+  @keyframes dots{0%{content:""}25%{content:"."}50%{content:".."}75%{content:"..."}}
+  .banner{background:linear-gradient(90deg,rgba(56,189,248,.15),rgba(167,139,250,.15));border:1px solid #3a4a63;
+    border-radius:12px;padding:12px 14px;margin-bottom:12px}
+  .banner .qq{font-weight:700;font-size:1.02rem;margin-top:4px}
+  .chal{background:var(--card2);border-radius:12px;padding:14px;margin-bottom:10px;cursor:pointer;border:2px solid transparent;transition:.15s}
+  .chal:hover{border-color:var(--accent)}.chal .ct{font-weight:700}.chal .cd{font-size:.8rem;color:var(--muted);margin-top:3px}
+  .verdict{border-radius:12px;padding:14px;margin-top:10px;font-weight:600}
+  .verdict.ok{background:rgba(52,211,153,.15);border:1px solid var(--good);color:var(--good)}
+  .verdict.no{background:rgba(248,113,113,.13);border:1px solid var(--bad);color:var(--bad)}
+  .done{display:inline-block;color:var(--good);font-size:.8rem;margin-left:6px}
   @media print{header,.fichaBtn,.noprint{display:none!important}body{background:#fff;color:#000}
     .card{box-shadow:none;background:#fff;border:1px solid #ccc}.fentry{background:#f4f4f4}.r{color:#06c}}
 </style>
@@ -73,11 +100,12 @@ let PROY={bigQ:"",grupo:""};
 let FICHA=[];
 let B={};                   // construcción actual
 let bstep="q";
+let PRACTICE=null;          // desafío de práctica activo {ch, idx} o null
 const app=document.getElementById("app"),fichaBtn=document.getElementById("fichaBtn");
 const KEY="vla_constructor_v1";
 
 const VERBS={
- filtrar:["🔎 Filtrar","quedarme con algunas filas"],
+ ver:["👁️ Ver las filas","mostrar la tabla que quedó tras filtrar"],
  sumar:["➕ Contar / Sumar / Promediar","calcular un número de una columna"],
  ordenar:["↕️ Ordenar","la que más / la que menos"],
  agrupar:["🗂️ Agrupar","juntar por categoría y resumir"],
@@ -119,7 +147,7 @@ function genSugs(cols){
   if(n.length)s.push([`¿Cuál es el/la de mayor ${n[0].k}?`,"ordenar"]);
   if(n.length)s.push([`¿Cuánto suman los ${n[0].k}?`,"sumar"]);
   if(c.length)s.push([`¿Cuántas filas hay de cada ${c[0].k}?`,"agrupar"]);
-  if(c.length)s.push([`Mostrame solo las filas donde ${c[0].k} sea cierto valor`,"filtrar"]);
+  if(c.length&&n.length)s.push([`Promedio de ${n[0].k} por cada ${c[0].k}`,"agrupar"]);
   if(n.length)s.push([`Graficar ${n[0].k}`,"graficar"]);
   return s;
 }
@@ -135,7 +163,8 @@ function home(){
       <div style="margin-top:6px;font-weight:700">Cargar CSV</div>
       <div class="muted" style="font-size:.82rem">Tocá acá y elegí tu archivo .csv</div>
       <input type="file" id="file" accept=".csv,text/csv" style="display:none"></div>
-    <button class="btn ghost" onclick="loadDemo()">Probar con datos de ejemplo</button>
+    <button class="btn" onclick="practiceHome()">🎯 Practiquemos (ejercicios que se corrigen)</button>
+    <button class="btn ghost" onclick="loadDemo()">Probar con datos de ejemplo (libre)</button>
     ${hasSaved?`<button class="btn" onclick="if(load())setupProyecto()">▶ Continuar mi proyecto guardado</button>
       <button class="btn ghost" onclick="reset()">🗑️ Borrar y empezar de cero</button>`:""}
   </div>`;
@@ -200,19 +229,25 @@ function setupProyecto(){
       ${D.cols.map(c=>`<span class="pill">${c.k} <small>(${c.t==="num"?"número":"texto"})</small></span>`).join("")}</div>
   </div>`;
 }
-function startBuild(){PROY.bigQ=val("bigQ");PROY.grupo=val("grupo");save();B={q:"",verb:null};bstep="q";renderBuild();}
+function startBuild(){PROY.bigQ=val("bigQ");PROY.grupo=val("grupo");save();B={q:"",filters:[],verb:null};bstep="q";renderBuild();}
 const val=id=>{const e=document.getElementById(id);return e?e.value:""};
 
 /* ===================== WIZARD ===================== */
 function buildShell(inner){
-  fichaBtn.style.display="block";fichaBtn.textContent=`📋 Mi ficha (${FICHA.length})`;
-  const steps=["q","verb","pieces","run","interpret"],labels={q:"Pregunta",verb:"Verbo",pieces:"Piezas",run:"Ejecutar",interpret:"Interpretar"};
+  if(PRACTICE){fichaBtn.style.display="none";}
+  else{fichaBtn.style.display="block";fichaBtn.textContent=`📋 Mi ficha (${FICHA.length})`;}
+  const allSteps=["q","filters","op","run","interpret"],labels={q:"Pregunta",filters:"Filtros",op:"Operación",run:"Ejecutar",interpret:"Interpretar"};
+  const steps=PRACTICE?allSteps.filter(s=>s!=="q"&&s!=="interpret"):allSteps;
+  const banner=PRACTICE?`<div class="banner">🎯 Ejercicio ${PRACTICE.idx+1}/${CHALLENGES.length} · <span class="muted">${CHALLENGES[PRACTICE.idx].title}</span>
+    <div class="qq">❓ ${B.q}</div>
+    <div class="muted" style="font-size:.78rem;margin-top:6px">Columnas: ${D.cols.map(c=>`<b>${c.k}</b> (${c.t==="num"?"número":"texto"})`).join(" · ")}</div></div>`:"";
   app.innerHTML=`<div class="card">
-    <div class="crumbs">📄 ${D.nombre} · Consulta #${FICHA.length+1}</div>
+    <div class="crumbs">📄 ${D.nombre}${PRACTICE?"":` · Consulta #${FICHA.length+1}`}</div>
+    ${banner}
     <div class="row noprint" style="gap:4px">${steps.map(s=>`<span class="pill" style="${s===bstep?'background:var(--accent);color:#0f172a':''}">${labels[s]}</span>`).join("")}</div>
     ${inner}</div>`;
 }
-function renderBuild(){({q:stepQ,verb:stepVerb,pieces:stepPieces,run:stepRun,interpret:stepInterpret}[bstep])();}
+function renderBuild(){({q:stepQ,filters:stepFilters,op:stepOp,run:stepRun,interpret:stepInterpret}[bstep])();}
 
 function colSample(c){
   if(c.t==="num"){const ns=D.data.map(r=>parseFloat(r[c.k])).filter(v=>!isNaN(v));
@@ -236,15 +271,29 @@ function stepQ(){
 function setQ(i){
   if(i>=0){B.q=D.sugs[i][0];B.hintVerb=D.sugs[i][1];}
   else{const v=val("ownQ").trim();if(!v){alert("Escribí tu pregunta o elegí una.");return}B.q=v;B.hintVerb=null;}
-  bstep="verb";renderBuild();
+  if(!B.filters)B.filters=[];
+  bstep="filters";renderBuild();
 }
-function stepVerb(){
-  buildShell(`<div class="step-label">PASO 2 · ¿Qué verbo responde "${B.q}"?</div>
-    <div class="opts">${Object.entries(VERBS).map(([k,v])=>`<button class="opt ${B.verb===k?'sel':''}" onclick="setVerb('${k}')">${v[0]}<span class="vt">${v[1]}</span></button>`).join("")}</div>
-    ${B.hintVerb?`<div class="hint">💡 <b>Pista:</b> preguntas así suelen resolverse con <b>${VERBS[B.hintVerb][0]}</b>.</div>`:""}
-    <button class="btn ghost" onclick="bstep='q';renderBuild()">← Volver</button>`);
+const chipFilter=f=>`${f.col} ${OPS[f.op]} ${f.t==="num"?f.val:'"'+f.val+'"'}`;
+function stepFilters(){
+  buildShell(`<div class="step-label">PASO 2 · ¿Con qué filas te quedás? (filtros)</div>
+    <p class="muted">Pregunta: <b>${B.q}</b></p>
+    <p class="muted">Un filtro achica la tabla. Podés encadenar <b>varios</b> (se cumplen TODOS) o no poner ninguno.</p>
+    ${B.filters.length
+      ? `<div class="chips">${B.filters.map((f,i)=>`<span class="chip">🔎 ${chipFilter(f)} <a onclick="rmFilter(${i})" title="quitar">✕</a></span>`).join('<span class="muted" style="align-self:center">Y</span>')}</div>`
+      : `<div class="hint">Sin filtros todavía: trabajarías con toda la tabla (${D.data.length} filas).</div>`}
+    <div class="addbox"><b>➕ Agregar un filtro</b>
+      <p class="muted" style="font-size:.8rem;margin:4px 0 8px">columna · operador · valor</p>
+      ${filterFormHTML()}
+      <button class="btn ghost sm" onclick="addFilter()">+ Agregar este filtro</button></div>
+    <button class="btn" onclick="bstep='op';renderBuild()">Siguiente: ¿qué hago con esas filas? →</button>
+    <button class="btn ghost" onclick="${PRACTICE?'practiceHome()':"bstep='q';renderBuild()"}">← ${PRACTICE?'Volver a los ejercicios':'Volver a la pregunta'}</button>`);
+  wireFilter();
 }
-function setVerb(k){B.verb=k;bstep="pieces";renderBuild();}
+function addFilter(){const f=readFilter();
+  if(f.val===""||f.val==null){alert("Elegí o escribí el valor del filtro.");return}
+  B.filters.push(f);renderBuild();}
+function rmFilter(i){B.filters.splice(i,1);renderBuild();}
 
 /* ---- filtro reutilizable ---- */
 function filterFormHTML(){return `<div class="row">
@@ -262,65 +311,83 @@ function applyFilter(rows,f){const v=f.t==="num"?parseFloat(f.val):f.val;
   return rows.filter(r=>{const c=r[f.col];return {eq:c==v,ne:c!=v,gt:c>v,lt:c<v,ge:c>=v,le:c<=v}[f.op];});}
 const recipeFilter=f=>`filtrar( ${f.col} ${RSYM[f.op]} ${f.t==="num"?f.val:'"'+f.val+'"'} )`;
 
-function stepPieces(){
+function setVerb(k){B.verb=k;renderBuild();}
+function opForm(v){
   const numC=D.cols.filter(c=>c.t==="num"),catC=D.cols.filter(c=>c.t==="cat");
-  let form="";
-  if(B.verb==="filtrar")form=`<p class="muted">Condición: <b>columna · operador · valor</b>.</p>${filterFormHTML()}`;
-  else if(B.verb==="sumar")form=`<label>¿Qué cálculo?</label>
+  if(v==="ver")return `<div class="hint">👁️ Vas a ver las filas que quedaron después de los filtros. Sin cálculo.</div>`;
+  if(v==="sumar")return `<label>¿Qué cálculo?</label>
     <select id="agg"><option value="contar">Contar filas (cuántas hay)</option><option value="suma">Sumar una columna</option><option value="prom">Promediar una columna</option></select>
-    <span id="aggcol"></span><label><input type="checkbox" id="useF"> Solo algunas filas (filtrar antes)</label>
-    <div id="fwrap" style="display:none">${filterFormHTML()}</div>`;
-  else if(B.verb==="ordenar")form=`<label>Ordenar por</label><select id="ocol">${numC.map(c=>`<option>${c.k}</option>`).join("")}</select>
+    <span id="aggcol"></span>`;
+  if(v==="ordenar"){if(!numC.length)return `<div class="hint">No hay columnas numéricas para ordenar. Probá otra operación.</div>`;
+    return `<label>Ordenar por</label><select id="ocol">${numC.map(c=>`<option>${c.k}</option>`).join("")}</select>
     <label>Dirección</label><select id="odir"><option value="desc">de mayor a menor (la que más)</option><option value="asc">de menor a mayor (la que menos)</option></select>
-    <label>Mostrar las primeras</label><select id="otop">${[1,3,5,10].map(n=>`<option ${n===5?"selected":""}>${n}</option>`).join("")}</select>`;
-  else if(B.verb==="agrupar")form=`<label>Agrupar por</label><select id="gcol">${catC.map(c=>`<option>${c.k}</option>`).join("")}</select>
-    <label>Resumir con</label><select id="gagg"><option value="contar">Contar cuántas hay</option><option value="suma">Sumar una columna</option></select><span id="gcolval"></span>`;
-  else if(B.verb==="graficar")form=`<label>Tipo</label><select id="gt"><option value="barras">Barras (comparar)</option><option value="lineas">Líneas (cómo cambia)</option></select>
+    <label>Mostrar las primeras</label><select id="otop">${[1,3,5,10].map(n=>`<option ${n===5?"selected":""}>${n}</option>`).join("")}</select>`;}
+  if(v==="agrupar"){if(!catC.length)return `<div class="hint">No hay columnas de texto para agrupar. Probá otra operación.</div>`;
+    return `<label>Agrupar por</label><select id="gcol">${catC.map(c=>`<option>${c.k}</option>`).join("")}</select>
+    <label>Resumir con</label><select id="gagg"><option value="contar">Contar cuántas hay</option><option value="suma">Sumar una columna</option></select><span id="gcolval"></span>`;}
+  if(v==="graficar"){if(!numC.length)return `<div class="hint">No hay columnas numéricas para graficar. Probá otra operación.</div>`;
+    return `<label>Tipo</label><select id="gt"><option value="barras">Barras (comparar)</option><option value="lineas">Líneas (cómo cambia)</option></select>
     <label>Eje X</label><select id="gx">${D.cols.map(c=>`<option>${c.k}</option>`).join("")}</select>
-    <label>Eje Y (número)</label><select id="gy">${numC.map(c=>`<option>${c.k}</option>`).join("")}</select>`;
-  if(!numC.length&&(B.verb==="ordenar"||B.verb==="graficar"))form=`<div class="hint">Este dataset no tiene columnas numéricas para este verbo. Probá otro verbo.</div>`;
-  if(!catC.length&&B.verb==="agrupar")form=`<div class="hint">Este dataset no tiene columnas de texto para agrupar. Probá otro verbo.</div>`;
-  buildShell(`<div class="step-label">PASO 3 · Armá las piezas de la consulta</div>${form}
-    <button class="btn" onclick="bstep='run';renderBuild()">Ejecutar la consulta ▶</button>
-    <button class="btn ghost" onclick="bstep='verb';renderBuild()">← Cambiar verbo</button>`);
-  if(B.verb==="filtrar")wireFilter();
-  if(B.verb==="sumar"){const agg=document.getElementById("agg"),ac=document.getElementById("aggcol");
-    const numC2=D.cols.filter(c=>c.t==="num");
+    <label>Eje Y (número)</label><select id="gy">${numC.map(c=>`<option>${c.k}</option>`).join("")}</select>`;}
+  return "";
+}
+function wireOpForm(){
+  const numC2=D.cols.filter(c=>c.t==="num");
+  if(B.verb==="sumar"){const agg=document.getElementById("agg"),ac=document.getElementById("aggcol");if(!agg)return;
     const u=()=>ac.innerHTML=agg.value==="contar"?"":`<label>Columna</label><select id="acol">${numC2.map(c=>`<option>${c.k}</option>`).join("")}</select>`;
-    agg.onchange=u;u();
-    document.getElementById("useF").onchange=e=>{document.getElementById("fwrap").style.display=e.target.checked?"block":"none";if(e.target.checked)wireFilter();};}
-  if(B.verb==="agrupar"){const ga=document.getElementById("gagg"),gv=document.getElementById("gcolval"),numC2=D.cols.filter(c=>c.t==="num");
+    agg.onchange=u;u();}
+  if(B.verb==="agrupar"){const ga=document.getElementById("gagg"),gv=document.getElementById("gcolval");if(!ga)return;
     const u=()=>gv.innerHTML=ga.value==="suma"?`<label>Sumar la columna</label><select id="gvcol">${numC2.map(c=>`<option>${c.k}</option>`).join("")}</select>`:"";
     ga.onchange=u;u();}
 }
+function stepOp(){
+  const form=B.verb?opForm(B.verb):`<p class="muted">Tocá una operación para elegir qué hacer con esas filas.</p>`;
+  buildShell(`<div class="step-label">PASO 3 · ¿Qué hacés con esas filas?</div>
+    ${B.filters.length?`<div class="hint">🔎 Filtros activos: <b>${B.filters.map(chipFilter).join(" Y ")}</b></div>`:`<div class="hint">Sin filtros: usás toda la tabla.</div>`}
+    <div class="opts" style="margin-top:8px">${Object.entries(VERBS).map(([k,v])=>`<button class="opt ${B.verb===k?'sel':''}" onclick="setVerb('${k}')">${v[0]}<span class="vt">${v[1]}</span></button>`).join("")}</div>
+    ${B.hintVerb&&!B.verb?`<div class="hint">💡 <b>Pista:</b> preguntas así suelen resolverse con <b>${(VERBS[B.hintVerb]||VERBS.ver)[0]}</b>.</div>`:""}
+    <div id="opform" style="margin-top:6px">${form}</div>
+    <button class="btn" onclick="if(!B.verb){alert('Elegí una operación.');return}bstep='run';renderBuild()">Ejecutar la consulta ▶</button>
+    <button class="btn ghost" onclick="bstep='filters';renderBuild()">← Volver a filtros</button>`);
+  wireOpForm();
+}
 
 /* ===================== EJECUTAR ===================== */
+const pyCond=f=>`(df["${f.col}"] ${RSYM[f.op]} ${f.t==="num"?f.val:'"'+f.val+'"'})`;
+const esc=s=>String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
 function compute(){
-  let rows=D.data.slice(),recipe=[`read_csv(${D.file})`],headers=D.cols.map(c=>c.k),outRows=null,chart=null,summary="";
+  let rows=D.data.slice();
+  const recipe=[`read_csv(${D.file})`],py=["import pandas as pd",`df = pd.read_csv("${D.file}.csv")`];
+  B.filters.forEach(f=>{rows=applyFilter(rows,f);recipe.push(recipeFilter(f));});
+  py.push(B.filters.length?`d = df[${B.filters.map(pyCond).join(" & ")}]`:`d = df`);
+  let headers=D.cols.map(c=>c.k),outRows=null,chart=null,summary="",answer=null,pyLast="resultado = d";
   try{
-  if(B.verb==="filtrar"){const f=readFilter();rows=applyFilter(rows,f);recipe.push(recipeFilter(f));outRows=rows;summary=`${rows.length} filas cumplen la condición.`;}
-  else if(B.verb==="sumar"){const agg=val("agg");
-    if(document.getElementById("useF")&&document.getElementById("useF").checked){const f=readFilter();rows=applyFilter(rows,f);recipe.push(recipeFilter(f));}
-    if(agg==="contar"){recipe.push("contar_filas()");summary=`Resultado: ${rows.length} filas.`;outRows=[["cantidad",rows.length]];headers=null;}
+  const v=B.verb;
+  if(v==="ver"){outRows=rows;summary=`${rows.length} filas quedaron tras los filtros.`;answer={kind:"rows",v:rows.length};pyLast="resultado = d";}
+  else if(v==="sumar"){const agg=val("agg");
+    if(agg==="contar"){recipe.push("contar_filas()");summary=`Resultado: ${rows.length} filas.`;outRows=[["cantidad",rows.length]];headers=null;answer={kind:"num",v:rows.length};pyLast="resultado = len(d)";}
     else{const col=val("acol"),vals=numv(rows.map(r=>r[col]));
-      if(agg==="suma"){const s=vals.reduce((a,b)=>a+b,0);recipe.push(`suma( ${col} )`);summary=`Total de ${col}: ${fmt(s)}.`;outRows=[["suma("+col+")",s]];}
-      else{const m=vals.reduce((a,b)=>a+b,0)/(vals.length||1);recipe.push(`promedio( ${col} )`);summary=`Promedio de ${col}: ${fmt(Math.round(m*10)/10)}.`;outRows=[["promedio("+col+")",Math.round(m*10)/10]];}
+      if(agg==="suma"){const s=vals.reduce((a,b)=>a+b,0);recipe.push(`suma( ${col} )`);summary=`Total de ${col}: ${fmt(s)}.`;outRows=[["suma("+col+")",s]];answer={kind:"num",v:s};pyLast=`resultado = d["${col}"].sum()`;}
+      else{const m=vals.reduce((a,b)=>a+b,0)/(vals.length||1),mr=Math.round(m*10)/10;recipe.push(`promedio( ${col} )`);summary=`Promedio de ${col}: ${fmt(mr)}.`;outRows=[["promedio("+col+")",mr]];answer={kind:"num",v:mr};pyLast=`resultado = d["${col}"].mean()`;}
       headers=null;}}
-  else if(B.verb==="ordenar"){const col=val("ocol"),dir=val("odir"),top=+val("otop");
-    rows.sort((a,b)=>dir==="desc"?b[col]-a[col]:a[col]-b[col]);rows=rows.slice(0,top);
-    recipe.push(`.sort_values(${col}, ascending=${dir==="asc"})`,`.head(${top})`);outRows=rows;
-    summary=`1°: ${rows[0][D.cols[0].k]} (${col} = ${fmt(rows[0][col])}).`;}
-  else if(B.verb==="agrupar"){const by=val("gcol"),agg=val("gagg"),g={};
+  else if(v==="ordenar"){const col=val("ocol"),dir=val("odir"),top=+val("otop");
+    rows=rows.slice().sort((a,b)=>dir==="desc"?b[col]-a[col]:a[col]-b[col]).slice(0,top);
+    recipe.push(`ordenar_por( ${col}, ${dir==="asc"?"asc":"desc"} )`,`primeras( ${top} )`);outRows=rows;
+    summary=`1°: ${rows[0][D.cols[0].k]} (${col} = ${fmt(rows[0][col])}).`;answer={kind:"cat",v:String(rows[0][D.cols[0].k])};
+    pyLast=`resultado = d.sort_values("${col}", ascending=${dir==="asc"?"True":"False"}).head(${top})`;}
+  else if(v==="agrupar"){const by=val("gcol"),agg=val("gagg"),g={};
     rows.forEach(r=>{(g[r[by]]=g[r[by]]||[]).push(r)});recipe.push(`agrupar_por( ${by} )`);let pairs;
-    if(agg==="suma"){const vc=val("gvcol");recipe.push(`suma( ${vc} )`);pairs=Object.entries(g).map(([k,v])=>[k,numv(v.map(r=>r[vc])).reduce((a,b)=>a+b,0)]);headers=[by,"suma("+vc+")"];}
-    else{recipe.push("contar_filas()");pairs=Object.entries(g).map(([k,v])=>[k,v.length]);headers=[by,"cantidad"];}
-    pairs.sort((a,b)=>b[1]-a[1]);outRows=pairs;chart=pairs;summary=`${pairs[0][0]} es la categoría más alta (${fmt(pairs[0][1])}).`;}
-  else if(B.verb==="graficar"){const tipo=val("gt"),x=val("gx"),y=val("gy");let pairs=rows.map(r=>[r[x],r[y]]);
+    if(agg==="suma"){const vc=val("gvcol");recipe.push(`suma( ${vc} )`);pairs=Object.entries(g).map(([k,v])=>[k,numv(v.map(r=>r[vc])).reduce((a,b)=>a+b,0)]);headers=[by,"suma("+vc+")"];pyLast=`resultado = d.groupby("${by}")["${vc}"].sum().sort_values(ascending=False)`;}
+    else{recipe.push("contar_filas()");pairs=Object.entries(g).map(([k,v])=>[k,v.length]);headers=[by,"cantidad"];pyLast=`resultado = d.groupby("${by}").size().sort_values(ascending=False)`;}
+    pairs.sort((a,b)=>b[1]-a[1]);outRows=pairs;chart=pairs;summary=`${pairs[0][0]} es la categoría más alta (${fmt(pairs[0][1])}).`;answer={kind:"cat",v:String(pairs[0][0])};}
+  else if(v==="graficar"){const tipo=val("gt"),x=val("gx"),y=val("gy");let pairs=rows.map(r=>[r[x],r[y]]);
     if(tipo==="barras"){pairs.sort((a,b)=>b[1]-a[1]);pairs=pairs.slice(0,12);}else pairs=pairs.slice(0,18);
-    recipe.push(`gráfico de ${tipo}: X=${x}, Y=${y}`);chart=pairs;headers=null;summary=`Gráfico de ${y} por ${x}.`;}
+    recipe.push(`graficar_${tipo}( X=${x}, Y=${y} )`);chart=pairs;headers=null;summary=`Gráfico de ${y} por ${x}.`;answer={kind:"chart"};
+    py.unshift("import plotly.express as px");pyLast=`resultado = px.${tipo==="barras"?"bar":"line"}(d, x="${x}", y="${y}")`;}
   }catch(e){summary="Faltó completar alguna pieza. Volvé y revisá.";}
-  B.recipe="print( "+recipe.join(" → ")+" )";B.summary=summary;
-  return {headers,outRows,chart,summary};
+  py.push(pyLast,"print(resultado)");
+  B.recipe="print( "+recipe.join(" → ")+" )";B.pycode=py.join("\n");B.summary=summary;B.answer=answer;
+  return {headers,outRows,chart,summary,filters:B.filters.length?B.filters.slice():null};
 }
 const fmt=n=>(typeof n==="number"?n.toLocaleString("es-AR"):n);
 function barsHTML(p){const max=Math.max(...p.map(x=>+x[1]))||1;
@@ -330,13 +397,35 @@ function tableHTML(headers,rows){
   const show=rows.slice(0,12);
   return `<table><tr>${headers.map(h=>`<th>${h}</th>`).join("")}</tr>${show.map(r=>`<tr>${(Array.isArray(r)?r:D.cols.map(c=>r[c.k])).map(c=>`<td>${fmt(c)}</td>`).join("")}</tr>`).join("")}</table>${rows.length>12?`<p class="muted" style="margin:6px 0 0">…y ${rows.length-12} filas más.</p>`:""}`;
 }
-function stepRun(){const res=compute();const body=res.chart?barsHTML(res.chart):tableHTML(res.headers,res.outRows);
+function stepRun(){const res=compute();B._res=res;
+  buildShell(`<div class="step-label">PASO 4 · Ejecutando…</div>
+    <p class="muted">La consulta que armaste:</p>
+    <div class="recipe">${B.recipe}</div>
+    <div class="result"><span class="run-dots">⏳ Ejecutando sobre ${D.data.length} filas</span></div>`);
+  setTimeout(()=>{if(bstep==="run")showResult(res);},700);
+}
+function showResult(res){
+  const body=res.chart?barsHTML(res.chart):`<div class="scrollx">${tableHTML(res.headers,res.outRows)}</div>`;
+  const next=PRACTICE
+    ? `<button class="btn" onclick="checkAnswer()">✅ Comprobar mi respuesta</button>`
+    : `<button class="btn" onclick="bstep='interpret';renderBuild()">Interpretar y guardar →</button>`;
   buildShell(`<div class="step-label">PASO 4 · Tu consulta y su resultado</div>
     <p class="muted">La receta que armaste (misma lógica que en Pandalyze):</p>
     <div class="recipe">${B.recipe}</div>
+    <details class="pyc"><summary>🐍 Ver el código Python real (Pandas)</summary><pre>${esc(B.pycode)}</pre></details>
     <div class="result"><b>📊 Resultado:</b> ${res.summary}${body}</div>
-    <button class="btn" onclick="bstep='interpret';renderBuild()">Interpretar y guardar →</button>
-    <button class="btn ghost" onclick="bstep='pieces';renderBuild()">← Ajustar piezas</button>`);
+    ${res.filters?highlightBlock(res.filters):""}
+    ${next}
+    <button class="btn ghost" onclick="bstep='op';renderBuild()">← Ajustar la consulta</button>`);
+}
+function highlightBlock(filters){
+  const rows=D.data.slice(0,18),heads=D.cols.map(c=>c.k);
+  const pass=r=>filters.every(f=>applyFilter([r],f).length>0);
+  const nHit=D.data.filter(pass).length;
+  return `<details class="hl"><summary>👁️ Ver qué filas eligieron los filtros (${nHit} de ${D.data.length})</summary>
+    <div class="muted" style="font-size:.78rem;margin:6px 0">Verde = pasa todos los filtros. Muestro las primeras 18 filas.</div>
+    <div class="scrollx"><table class="hlt"><tr>${heads.map(h=>`<th>${h}</th>`).join("")}</tr>
+    ${rows.map(r=>`<tr class="${pass(r)?'hit':'miss'}">${heads.map(h=>`<td>${fmt(r[h])}</td>`).join("")}</tr>`).join("")}</table></div></details>`;
 }
 function stepInterpret(){
   buildShell(`<div class="step-label">PASO 5 · ¿Qué significa? (esto va a tu ficha)</div>
@@ -347,6 +436,84 @@ function stepInterpret(){
     <button class="btn ghost" onclick="bstep='run';renderBuild()">← Volver</button>`);
 }
 function saveEntry(){FICHA.push({q:B.q,recipe:B.recipe,summary:B.summary,enc:val("enc"),sig:val("sig")});save();goFicha();}
+
+/* ===================== PRÁCTICA (ejercicios autocorregidos) ===================== */
+const PKEY="vla_practica_done";
+const pdone=()=>{try{return JSON.parse(localStorage.getItem(PKEY))||{}}catch(e){return{}}};
+function markDone(i){const d=pdone();d[i]=true;try{localStorage.setItem(PKEY,JSON.stringify(d))}catch(e){}}
+const VENTAS_C=[{k:"producto",t:"cat"},{k:"ciudad",t:"cat"},{k:"monto",t:"num"}];
+const VENTAS_D=[{producto:"Remera",ciudad:"Bariloche",monto:12000},{producto:"Buzo",ciudad:"Bariloche",monto:25000},
+  {producto:"Gorra",ciudad:"VLA",monto:8000},{producto:"Remera",ciudad:"VLA",monto:12000},
+  {producto:"Buzo",ciudad:"Bariloche",monto:25000},{producto:"Gorra",ciudad:"Bariloche",monto:8000}];
+const BOSQUE_C=[{k:"especie",t:"cat"},{k:"tipo",t:"cat"},{k:"registros",t:"num"}];
+const BOSQUE_D=[{especie:"Coihue",tipo:"nativa",registros:120},{especie:"Ciprés",tipo:"nativa",registros:90},
+  {especie:"Pino",tipo:"exótica",registros:60},{especie:"Retama",tipo:"exótica",registros:45},
+  {especie:"Ñire",tipo:"nativa",registros:80},{especie:"Rosa mosqueta",tipo:"exótica",registros:70}];
+const CHALLENGES=[
+ {title:"Ventas de una tienda",file:"ventas",cols:VENTAS_C,data:VENTAS_D,
+  question:"¿Cuánto vendió en total Bariloche?",
+  hint:"Primero quedate solo con Bariloche (FILTRÁ ciudad = Bariloche) y después SUMÁ la columna monto.",
+  expect:{kind:"num",v:70000}},
+ {title:"Ventas de una tienda",file:"ventas",cols:VENTAS_C,data:VENTAS_D,
+  question:"¿Cuántas ventas hubo del producto Buzo?",
+  hint:"FILTRÁ producto = Buzo y después CONTÁ las filas.",
+  expect:{kind:"num",v:2}},
+ {title:"Ventas de una tienda",file:"ventas",cols:VENTAS_C,data:VENTAS_D,
+  question:"¿Qué ciudad vendió MÁS en total?",
+  hint:"Acá no alcanza con filtrar: AGRUPÁ por ciudad y resumí sumando monto. La de arriba de todo es la respuesta.",
+  expect:{kind:"cat",v:"Bariloche"}},
+ {title:"Especies del bosque",file:"bosque",cols:BOSQUE_C,data:BOSQUE_D,
+  question:"¿Cuántas especies son nativas?",
+  hint:"FILTRÁ tipo = nativa y después CONTÁ las filas.",
+  expect:{kind:"num",v:3}},
+ {title:"Especies del bosque",file:"bosque",cols:BOSQUE_C,data:BOSQUE_D,
+  question:"¿Cuál es la especie con MÁS registros?",
+  hint:"ORDENÁ por registros de mayor a menor y mirá la primera fila.",
+  expect:{kind:"cat",v:"Coihue"}},
+ {title:"Especies del bosque",file:"bosque",cols:BOSQUE_C,data:BOSQUE_D,
+  question:"¿Cuántos registros suman las especies exóticas?",
+  hint:"FILTRÁ tipo = exótica y después SUMÁ la columna registros.",
+  expect:{kind:"num",v:175}}
+];
+function practiceHome(){
+  PRACTICE=null;fichaBtn.style.display="none";const done=pdone();
+  const n=Object.keys(done).filter(k=>done[k]).length;
+  app.innerHTML=`<div class="card">
+    <h2>🎯 Practiquemos</h2>
+    <p class="muted">Ejercicios con datos de mentira para entrenar a <b>pensar la consulta</b>. Leé la pregunta, armala paso a paso (filtros → operación) y la app te corrige.</p>
+    ${n?`<div class="hint">Llevás ${n}/${CHALLENGES.length} resueltos. 💪</div>`:""}
+    ${CHALLENGES.map((ch,i)=>`<div class="chal" onclick="startChallenge(${i})">
+      <div class="ct">${done[i]?"✅ ":`${i+1}. `}${ch.question}${done[i]?'<span class="done">resuelto</span>':''}</div>
+      <div class="cd">📄 ${ch.title} — columnas: ${ch.cols.map(c=>c.k).join(", ")}</div></div>`).join("")}
+    <button class="btn ghost" onclick="home()">← Volver al inicio</button>
+  </div>`;
+}
+function startChallenge(i){
+  const ch=CHALLENGES[i];
+  D={nombre:ch.title,file:ch.file,cols:ch.cols.map(c=>({...c})),data:ch.data.map(r=>({...r})),sugs:[]};
+  PRACTICE={idx:i};B={q:ch.question,filters:[],verb:null,hintVerb:null};bstep="filters";renderBuild();
+}
+function checkAnswer(){
+  const ch=CHALLENGES[PRACTICE.idx],a=B.answer,numK=["num","rows"];let ok=false;
+  if(a){
+    if(numK.includes(ch.expect.kind)&&numK.includes(a.kind)){const e=ch.expect.v;ok=Math.abs(a.v-e)<Math.max(0.5,Math.abs(e)*0.01);}
+    else if(ch.expect.kind==="cat"&&a.kind==="cat"){ok=String(a.v).trim().toLowerCase()===String(ch.expect.v).trim().toLowerCase();}
+  }
+  showVerdict(ok,ch);
+}
+function showVerdict(ok,ch){
+  if(ok)markDone(PRACTICE.idx);
+  const res=B._res,body=res.chart?barsHTML(res.chart):`<div class="scrollx">${tableHTML(res.headers,res.outRows)}</div>`;
+  const last=PRACTICE.idx+1>=CHALLENGES.length;
+  buildShell(`<div class="step-label">Corrección</div>
+    <div class="recipe">${B.recipe}</div>
+    <div class="result"><b>📊 Tu resultado:</b> ${res.summary}${body}</div>
+    <div class="verdict ${ok?'ok':'no'}">${ok?'✅ ¡Correcto! Esa consulta responde la pregunta.':'❌ Todavía no.<br><br>💡 <b>Pista:</b> '+ch.hint}</div>
+    ${ok
+      ? (last?`<div class="hint">🎉 ¡Completaste todos los ejercicios!</div><button class="btn" onclick="practiceHome()">Volver a la lista</button>`
+             :`<button class="btn" onclick="startChallenge(${PRACTICE.idx+1})">Siguiente ejercicio →</button><button class="btn ghost" onclick="practiceHome()">Volver a la lista</button>`)
+      : `<button class="btn" onclick="bstep='filters';renderBuild()">↺ Probá de nuevo</button><button class="btn ghost" onclick="practiceHome()">Salir de la práctica</button>`}`);
+}
 
 /* ===================== FICHA ===================== */
 function goFicha(){
