@@ -236,6 +236,12 @@ function startBuild(){PROY.bigQ=val("bigQ");PROY.grupo=val("grupo");save();B={q:
 const val=id=>{const e=document.getElementById(id);return e?e.value:""};
 
 /* ===================== WIZARD ===================== */
+function dataPeek(D){
+  const heads=D.cols.map(c=>c.k);
+  return `<details class="hl" style="margin-top:8px"><summary>Ver la tabla de datos (${D.data.length} filas)</summary>
+    <div class="scrollx"><table><tr>${heads.map(h=>`<th>${h}</th>`).join("")}</tr>
+    ${D.data.map(r=>`<tr>${heads.map(h=>`<td>${fmt(r[h])}</td>`).join("")}</tr>`).join("")}</table></div></details>`;
+}
 function buildShell(inner){
   if(PRACTICE){fichaBtn.style.display="none";}
   else{fichaBtn.style.display="block";fichaBtn.textContent=`Mi ficha (${FICHA.length})`;}
@@ -243,7 +249,8 @@ function buildShell(inner){
   const steps=PRACTICE?allSteps.filter(s=>s!=="q"&&s!=="interpret"):allSteps;
   const banner=PRACTICE?`<div class="banner">Ejercicio ${PRACTICE.idx+1}/${CHALLENGES.length} · <span class="muted">${CHALLENGES[PRACTICE.idx].title}</span>
     <div class="qq">${B.q}</div>
-    <div class="muted" style="font-size:.78rem;margin-top:6px">Columnas: ${D.cols.map(c=>`<b>${c.k}</b> (${c.t==="num"?"número":"texto"})`).join(" · ")}</div></div>`:"";
+    <div class="muted" style="font-size:.78rem;margin-top:6px">Columnas: ${D.cols.map(c=>`<b>${c.k}</b> (${c.t==="num"?"número":"texto"})`).join(" · ")}</div>
+    ${dataPeek(D)}</div>`:"";
   app.innerHTML=`<div class="card">
     <div class="crumbs">${D.nombre}${PRACTICE?"":` · Consulta #${FICHA.length+1}`}</div>
     ${banner}
