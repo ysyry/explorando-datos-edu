@@ -236,6 +236,12 @@ function startBuild(){PROY.bigQ=val("bigQ");PROY.grupo=val("grupo");save();B={q:
 const val=id=>{const e=document.getElementById(id);return e?e.value:""};
 
 /* ===================== WIZARD ===================== */
+const REAL_FILES={
+  biodiversidad:"Datos reales · iNaturalist / ArgentiNat (recorte del Parque Nahuel Huapi)",
+  invasoras:"Datos reales · iNaturalist / ArgentiNat (Isla Victoria)"};
+function dataOrigen(D){return REAL_FILES[D.file]
+  ? `<span class="pill" style="background:rgba(52,211,153,.13);color:var(--good);font-size:.72rem">${REAL_FILES[D.file]}</span>`
+  : `<span class="pill" style="background:rgba(251,191,36,.12);color:var(--warn);font-size:.72rem">Datos de ejemplo (inventados para practicar, no son reales)</span>`;}
 function dataPeek(D){
   const heads=D.cols.map(c=>c.k);
   return `<details class="hl" style="margin-top:8px"><summary>Ver la tabla de datos (${D.data.length} filas)</summary>
@@ -250,6 +256,7 @@ function buildShell(inner){
   const banner=PRACTICE?`<div class="banner">Ejercicio ${PRACTICE.idx+1}/${CHALLENGES.length} · <span class="muted">${CHALLENGES[PRACTICE.idx].title}</span>
     <div class="qq">${B.q}</div>
     <div class="muted" style="font-size:.78rem;margin-top:6px">Columnas: ${D.cols.map(c=>`<b>${c.k}</b> (${c.t==="num"?"número":"texto"})`).join(" · ")}</div>
+    <div style="margin-top:6px">${dataOrigen(D)}</div>
     ${dataPeek(D)}</div>`:"";
   app.innerHTML=`<div class="card">
     <div class="crumbs">${D.nombre}${PRACTICE?"":` · Consulta #${FICHA.length+1}`}</div>
