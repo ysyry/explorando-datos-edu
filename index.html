@@ -164,6 +164,9 @@ function home(){
       <div class="muted" style="font-size:.82rem">Tocá acá y elegí tu archivo .csv</div>
       <input type="file" id="file" accept=".csv,text/csv" style="display:none"></div>
     <button class="btn" onclick="practiceHome()">Practiquemos un rato!</button>
+    <button class="btn" onclick="cicloHome()">El ciclo de datos (decidí y pensá)</button>
+    <button class="btn" onclick="flowHome()">Misión: diagramas de flujo</button>
+    <button class="btn" onclick="pyHome()">Pensar como en Python</button>
     <button class="btn ghost" onclick="loadDemo()">Probar con datos de ejemplo (libre)</button>
     ${hasSaved?`<button class="btn" onclick="if(load())setupProyecto()">▶ Continuar mi proyecto guardado</button>
       <button class="btn ghost" onclick="reset()">Borrar y empezar de cero</button>`:""}
@@ -449,31 +452,96 @@ const BOSQUE_C=[{k:"especie",t:"cat"},{k:"tipo",t:"cat"},{k:"registros",t:"num"}
 const BOSQUE_D=[{especie:"Coihue",tipo:"nativa",registros:120},{especie:"Ciprés",tipo:"nativa",registros:90},
   {especie:"Pino",tipo:"exótica",registros:60},{especie:"Retama",tipo:"exótica",registros:45},
   {especie:"Ñire",tipo:"nativa",registros:80},{especie:"Rosa mosqueta",tipo:"exótica",registros:70}];
+/* --- datasets reales de VLA (para desafíos nuevos) --- */
+const TURISMO_C=[{k:"mes",t:"cat"},{k:"temporada",t:"cat"},{k:"visitantes",t:"num"},{k:"ocupacion",t:"num"}];
+const TURISMO_D=[{mes:"Enero",temporada:"Alta",visitantes:9200,ocupacion:88},{mes:"Febrero",temporada:"Alta",visitantes:8500,ocupacion:82},
+  {mes:"Marzo",temporada:"Media",visitantes:6800,ocupacion:65},{mes:"Abril",temporada:"Media",visitantes:3800,ocupacion:45},
+  {mes:"Mayo",temporada:"Baja",visitantes:1500,ocupacion:22},{mes:"Junio",temporada:"Media",visitantes:4200,ocupacion:50},
+  {mes:"Julio",temporada:"Alta",visitantes:7800,ocupacion:90},{mes:"Agosto",temporada:"Alta",visitantes:6900,ocupacion:78},
+  {mes:"Septiembre",temporada:"Baja",visitantes:2200,ocupacion:32},{mes:"Octubre",temporada:"Media",visitantes:4800,ocupacion:55},
+  {mes:"Noviembre",temporada:"Media",visitantes:5200,ocupacion:60},{mes:"Diciembre",temporada:"Alta",visitantes:8800,ocupacion:85}];
+const BIO_C=[{k:"especie",t:"cat"},{k:"origen",t:"cat"},{k:"registros",t:"num"}];
+const BIO_D=[{especie:"Coihue",origen:"nativa",registros:111},{especie:"Amancay",origen:"nativa",registros:106},
+  {especie:"Chilco",origen:"nativa",registros:97},{especie:"Arrayán",origen:"nativa",registros:78},
+  {especie:"Calafate",origen:"nativa",registros:75},{especie:"Lenga",origen:"nativa",registros:70},
+  {especie:"Rosa mosqueta",origen:"exótica",registros:97},{especie:"Lupino",origen:"exótica",registros:83},
+  {especie:"Retama",origen:"exótica",registros:59},{especie:"Dedalera",origen:"exótica",registros:26},
+  {especie:"Diente de león",origen:"exótica",registros:12},{especie:"Pino contorta",origen:"exótica",registros:4}];
+const INVAS_C=[{k:"especie",t:"cat"},{k:"grupo",t:"cat"},{k:"continente",t:"cat"},{k:"registros",t:"num"}];
+const INVAS_D=[{especie:"Faisán plateado",grupo:"ave",continente:"Asia",registros:8},{especie:"Retama",grupo:"planta",continente:"Europa",registros:5},
+  {especie:"Lupino",grupo:"planta",continente:"Norteamérica",registros:3},{especie:"Rosa mosqueta",grupo:"planta",continente:"Europa",registros:3},
+  {especie:"Gamo",grupo:"mamífero",continente:"Europa",registros:2},{especie:"Abejorro europeo",grupo:"insecto",continente:"Europa",registros:2},
+  {especie:"Rata negra",grupo:"mamífero",continente:"Asia",registros:1},{especie:"Trucha arcoíris",grupo:"pez",continente:"Norteamérica",registros:1}];
 const CHALLENGES=[
- {title:"Ventas de una tienda",file:"ventas",cols:VENTAS_C,data:VENTAS_D,
+ {title:"Ventas de una tienda",file:"ventas",cols:VENTAS_C,data:VENTAS_D,level:"salidero",tag:"Aritmética",
   question:"¿Cuánto vendió en total Bariloche?",
   hint:"Primero quedate solo con Bariloche (FILTRÁ ciudad = Bariloche) y después SUMÁ la columna monto.",
   expect:{kind:"num",v:70000}},
- {title:"Ventas de una tienda",file:"ventas",cols:VENTAS_C,data:VENTAS_D,
+ {title:"Ventas de una tienda",file:"ventas",cols:VENTAS_C,data:VENTAS_D,level:"salidero",tag:"Aritmética",
   question:"¿Cuántas ventas hubo del producto Buzo?",
   hint:"FILTRÁ producto = Buzo y después CONTÁ las filas.",
   expect:{kind:"num",v:2}},
- {title:"Ventas de una tienda",file:"ventas",cols:VENTAS_C,data:VENTAS_D,
+ {title:"Ventas de una tienda",file:"ventas",cols:VENTAS_C,data:VENTAS_D,level:"pensar",tag:"Estadística",
   question:"¿Qué ciudad vendió MÁS en total?",
   hint:"Acá no alcanza con filtrar: AGRUPÁ por ciudad y resumí sumando monto. La de arriba de todo es la respuesta.",
   expect:{kind:"cat",v:"Bariloche"}},
- {title:"Especies del bosque",file:"bosque",cols:BOSQUE_C,data:BOSQUE_D,
+ {title:"Especies del bosque",file:"bosque",cols:BOSQUE_C,data:BOSQUE_D,level:"salidero",tag:"Aritmética",
   question:"¿Cuántas especies son nativas?",
   hint:"FILTRÁ tipo = nativa y después CONTÁ las filas.",
   expect:{kind:"num",v:3}},
- {title:"Especies del bosque",file:"bosque",cols:BOSQUE_C,data:BOSQUE_D,
+ {title:"Especies del bosque",file:"bosque",cols:BOSQUE_C,data:BOSQUE_D,level:"salidero",tag:"Estadística",
   question:"¿Cuál es la especie con MÁS registros?",
   hint:"ORDENÁ por registros de mayor a menor y mirá la primera fila.",
   expect:{kind:"cat",v:"Coihue"}},
- {title:"Especies del bosque",file:"bosque",cols:BOSQUE_C,data:BOSQUE_D,
+ {title:"Especies del bosque",file:"bosque",cols:BOSQUE_C,data:BOSQUE_D,level:"salidero",tag:"Aritmética",
   question:"¿Cuántos registros suman las especies exóticas?",
   hint:"FILTRÁ tipo = exótica y después SUMÁ la columna registros.",
-  expect:{kind:"num",v:175}}
+  expect:{kind:"num",v:175}},
+ /* --- nuevos: datos reales de VLA --- */
+ {title:"Ventas de una tienda",file:"ventas",cols:VENTAS_C,data:VENTAS_D,level:"pensar",tag:"Dos filtros",
+  question:"¿Cuánto vendió Bariloche en Buzos?",
+  hint:"Encadená DOS filtros: ciudad = Bariloche Y producto = Buzo. Después SUMÁ la columna monto.",
+  expect:{kind:"num",v:50000}},
+ {title:"Turismo de VLA por mes",file:"turismo",cols:TURISMO_C,data:TURISMO_D,level:"salidero",tag:"Búsqueda",
+  question:"¿Cuántos visitantes hubo en Julio?",
+  hint:"FILTRÁ mes = Julio (queda una sola fila) y después SUMÁ la columna visitantes.",
+  expect:{kind:"num",v:7800}},
+ {title:"Turismo de VLA por mes",file:"turismo",cols:TURISMO_C,data:TURISMO_D,level:"pensar",tag:"Aritmética",
+  question:"¿Cuál es el promedio de ocupación en temporada Baja?",
+  hint:"FILTRÁ temporada = Baja y después PROMEDIÁ la columna ocupacion.",
+  expect:{kind:"num",v:27}},
+ {title:"Turismo de VLA por mes",file:"turismo",cols:TURISMO_C,data:TURISMO_D,level:"pensar",tag:"Estadística",
+  question:"¿Qué temporada recibe MÁS visitantes en total?",
+  hint:"AGRUPÁ por temporada y resumí sumando visitantes. La de arriba de todo es la respuesta.",
+  expect:{kind:"cat",v:"Alta"}},
+ {title:"Turismo de VLA por mes",file:"turismo",cols:TURISMO_C,data:TURISMO_D,level:"pensar",tag:"Estadística",
+  question:"¿Cuál es el mes con MENOS visitantes?",
+  hint:"ORDENÁ por visitantes de menor a mayor y mirá la primera fila.",
+  expect:{kind:"cat",v:"Mayo"}},
+ {title:"Nativas vs exóticas (Nahuel Huapi)",file:"biodiversidad",cols:BIO_C,data:BIO_D,level:"salidero",tag:"Aritmética",
+  question:"¿Cuántas especies nativas hay en la tabla?",
+  hint:"FILTRÁ origen = nativa y después CONTÁ las filas.",
+  expect:{kind:"num",v:6}},
+ {title:"Nativas vs exóticas (Nahuel Huapi)",file:"biodiversidad",cols:BIO_C,data:BIO_D,level:"pensar",tag:"Estadística",
+  question:"¿Cuál es la especie NATIVA con más registros?",
+  hint:"Primero FILTRÁ origen = nativa, después ORDENÁ por registros de mayor a menor y mirá la primera.",
+  expect:{kind:"cat",v:"Coihue"}},
+ {title:"Nativas vs exóticas (Nahuel Huapi)",file:"biodiversidad",cols:BIO_C,data:BIO_D,level:"salidero",tag:"Aritmética",
+  question:"¿Cuántos registros suman las especies exóticas?",
+  hint:"FILTRÁ origen = exótica y después SUMÁ la columna registros.",
+  expect:{kind:"num",v:281}},
+ {title:"Nativas vs exóticas (Nahuel Huapi)",file:"biodiversidad",cols:BIO_C,data:BIO_D,level:"pensar",tag:"Estadística",
+  question:"¿Qué origen tiene MÁS registros en total, nativas o exóticas?",
+  hint:"AGRUPÁ por origen y sumá registros. Compará los dos totales.",
+  expect:{kind:"cat",v:"nativa"}},
+ {title:"Especies invasoras (Isla Victoria)",file:"invasoras",cols:INVAS_C,data:INVAS_D,level:"salidero",tag:"Aritmética",
+  question:"¿Cuántas especies invasoras son plantas?",
+  hint:"FILTRÁ grupo = planta y después CONTÁ las filas.",
+  expect:{kind:"num",v:3}},
+ {title:"Especies invasoras (Isla Victoria)",file:"invasoras",cols:INVAS_C,data:INVAS_D,level:"pensar",tag:"Estadística",
+  question:"¿De qué continente vienen MÁS especies invasoras?",
+  hint:"AGRUPÁ por continente y contá cuántas hay de cada uno. El de arriba es la respuesta.",
+  expect:{kind:"cat",v:"Europa"}}
 ];
 function practiceHome(){
   PRACTICE=null;fichaBtn.style.display="none";const done=pdone();
@@ -484,7 +552,7 @@ function practiceHome(){
     ${n?`<div class="hint">Llevás ${n}/${CHALLENGES.length} resueltos. </div>`:""}
     ${CHALLENGES.map((ch,i)=>`<div class="chal" onclick="startChallenge(${i})">
       <div class="ct">${done[i]?"":`${i+1}. `}${ch.question}${done[i]?'<span class="done">resuelto</span>':''}</div>
-      <div class="cd">${ch.title} — columnas: ${ch.cols.map(c=>c.k).join(", ")}</div></div>`).join("")}
+      <div class="cd">${ch.title} — ${ch.cols.map(c=>c.k).join(", ")}</div></div>`).join("")}
     <button class="btn ghost" onclick="home()">← Volver al inicio</button>
   </div>`;
 }
@@ -541,6 +609,283 @@ function delEntry(i){FICHA.splice(i,1);save();goFicha();}
 function copyFicha(){let t=`FICHA DE PROYECTO - VLA en datos\nPregunta: ${PROY.bigQ}\nGrupo: ${PROY.grupo}\nDataset: ${D?D.nombre:""}\n\n`;
   FICHA.forEach((e,i)=>{t+=`${i+1}. ${e.q}\n   Consulta: ${e.recipe}\n   Resultado: ${e.summary}\n   Encontramos: ${e.enc}\n   Significa: ${e.sig}\n\n`;});
   (navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>alert("¡Ficha copiada!")).catch(()=>prompt("Copiá tu ficha:",t));}
+
+/* ===================== CICLO DE DATOS (interactivo) ===================== */
+function badgeLevel(l){return l==="salidero"?'<span class="pill" style="background:rgba(52,211,153,.15);color:var(--good)">salidero</span> ':l==="pensar"?'<span class="pill" style="background:rgba(251,191,36,.13);color:var(--warn)">para pensar</span> ':"";}
+
+const QTYPE_ITEMS=[
+ {q:"¿Cuántos visitantes hubo en julio?",options:["Búsqueda","Aritmética","Estadística","No se responde con la tabla"],answer:0,
+  why:"Se responde mirando UN solo dato de la tabla."},
+ {q:"¿Cuál es el promedio de visitantes por mes?",options:["Búsqueda","Aritmética","Estadística","No se responde con la tabla"],answer:1,
+  why:"Hay que CALCULAR algo (un promedio) con toda una columna."},
+ {q:"En general, ¿los meses fríos tienen menos turismo?",options:["Búsqueda","Aritmética","Estadística","No se responde con la tabla"],answer:2,
+  why:"Busca un PATRÓN general (‘en general’), aceptando que hay variación. Es la más potente."},
+ {q:"¿Por qué la gente no viene en mayo?",options:["Búsqueda","Aritmética","Estadística","No se responde con la tabla"],answer:3,
+  why:"El ‘por qué’ necesita info de AFUERA (clima, precios, vacaciones): la tabla sola no lo dice."},
+ {q:"¿Cuántas especies de la lista son nativas?",options:["Búsqueda","Aritmética","Estadística","No se responde con la tabla"],answer:1,
+  why:"Hay que contar: es un cálculo sobre una columna."},
+ {q:"En general, ¿las nativas tienen más registros que las exóticas?",options:["Búsqueda","Aritmética","Estadística","No se responde con la tabla"],answer:2,
+  why:"Compara dos grupos buscando un patrón general: estadística."},
+ {q:"¿Las plantas invasoras llegaron por el turismo?",options:["Búsqueda","Aritmética","Estadística","No se responde con la tabla"],answer:3,
+  why:"Es una causa histórica: necesitás fuentes de afuera de la tabla."},
+ {q:"¿Cuántos registros tiene el Coihue?",options:["Búsqueda","Aritmética","Estadística","No se responde con la tabla"],answer:0,
+  why:"Un solo dato, se lee directo de la fila del Coihue."}
+];
+const CYCLE_ITEMS=[
+ {q:"Escribís en tu carpeta: ‘¿el turismo baja en otoño?’",options:["Preguntar","Considerar datos","Analizar","Interpretar"],answer:0,
+  why:"Todavía es una PREGUNTA: así arranca el ciclo."},
+ {q:"Decidís que vas a necesitar las columnas ‘mes’, ‘temporada’ y ‘visitantes’.",options:["Preguntar","Considerar datos","Analizar","Interpretar"],answer:1,
+  why:"Estás pensando QUÉ datos (filas y columnas) necesitás: Considerar datos."},
+ {q:"Filtrás los meses de otoño y sumás los visitantes.",options:["Preguntar","Considerar datos","Analizar","Interpretar"],answer:2,
+  why:"Estás operando con los datos: filtrar y sumar es ANALIZAR."},
+ {q:"Concluís: ‘sí, en otoño baja casi a la mitad; mi hipótesis era correcta’.",options:["Preguntar","Considerar datos","Analizar","Interpretar"],answer:3,
+  why:"Le das sentido al resultado y lo comparás con tu hipótesis: INTERPRETAR."},
+ {q:"En el medio te das cuenta de que te faltaba la columna ‘temporada’.",options:["Preguntar","Considerar datos","Analizar","Interpretar"],answer:1,
+  why:"Volvés a pensar qué datos necesitás: el ciclo no es una línea recta, se vuelve atrás."},
+ {q:"El resultado te deja una pregunta nueva: ‘¿y en primavera?’.",options:["Preguntar","Considerar datos","Analizar","Interpretar"],answer:0,
+  why:"Una nueva pregunta arranca otra vuelta del ciclo."}
+];
+const REFLECT_ITEMS=[
+ {q:"Tenés la tabla de turismo por mes. ¿Se puede responder ‘¿por qué mayo tiene menos visitantes?’ SOLO con esta tabla? ¿Qué te falta?",
+  pista:"La tabla dice CUÁNTO, no POR QUÉ. Para el porqué necesitás info de afuera: clima, precios, vacaciones, eventos. Es una pregunta ‘que no se responde con la tabla’."},
+ {q:"Descubriste que Bariloche vende más que VLA. ¿Alcanza para decir que ‘en Bariloche les va mejor’? ¿Qué más mirarías?",
+  pista:"Bariloche es mucho más grande. Convendría mirar por comercio, o por habitante, no el total crudo. Comparar totales de lugares de distinto tamaño puede engañar."},
+ {q:"Las nativas tienen más registros que las exóticas. ¿Significa que hay MÁS plantas nativas… o que la gente las registra más?",
+  pista:"‘Registros’ mide observaciones de personas, no plantas reales. Puede haber sesgo: se registra lo más llamativo o conocido. Ojo con confundir el dato con la realidad."},
+ {q:"Inventá una pregunta ESTADÍSTICA sobre la biodiversidad de VLA (que use ‘en general’ y admita variación).",
+  pista:"No hay una única respuesta correcta. Lo bueno es que busque un PATRÓN, no un solo dato. Ej: ‘en general, ¿las especies nativas se registran más en primavera?’."}
+];
+function cicloHome(){
+  fichaBtn.style.display="none";
+  app.innerHTML=`<div class="card">
+    <h2>El ciclo de datos</h2>
+    <p class="muted">Investigar con datos es dar vueltas a este ciclo. Elegí en qué entrenar.</p>
+    <div class="recipe">1. PREGUNTAR → 2. CONSIDERAR DATOS → 3. ANALIZAR → 4. INTERPRETAR → (nuevas preguntas) ↺</div>
+    <div class="chal" onclick="quizStart(QTYPE_ITEMS,'¿Qué tipo de pregunta es?','cicloHome()')">
+      <div class="ct">¿Qué tipo de pregunta es?</div>
+      <div class="cd">Búsqueda · Aritmética · Estadística · No se responde. Clasificá y la app te corrige.</div></div>
+    <div class="chal" onclick="quizStart(CYCLE_ITEMS,'¿En qué paso del ciclo estás?','cicloHome()')">
+      <div class="ct">¿En qué paso del ciclo estás?</div>
+      <div class="cd">Te describo una situación y decidís en qué etapa del ciclo estás.</div></div>
+    <div class="chal" onclick="reflectStart(REFLECT_ITEMS,'cicloHome()')">
+      <div class="ct">Para pensar</div>
+      <div class="cd">Preguntas abiertas, sin una única respuesta. Para discutir en grupo.</div></div>
+    <button class="btn ghost" onclick="home()">← Volver al inicio</button>
+  </div>`;
+}
+
+/* --- motor de quiz de opción múltiple (autocorregido) --- */
+let QUIZ=null;
+function quizStart(items,title,back){QUIZ={items,i:0,title,back,score:0};quizRender();}
+function quizRender(){
+  if(QUIZ.i>=QUIZ.items.length)return quizDone();
+  const it=QUIZ.items[QUIZ.i];
+  app.innerHTML=`<div class="card">
+    <div class="crumbs">${QUIZ.title} · ${QUIZ.i+1}/${QUIZ.items.length}</div>
+    ${it.code?`<pre class="recipe" style="color:var(--good);white-space:pre-wrap">${esc(it.code)}</pre>`:""}
+    <div class="banner"><div class="qq">${it.q}</div></div>
+    <div class="opts" id="qopts">${it.options.map((o,k)=>`<button class="opt" onclick="quizAns(${k})">${o}</button>`).join("")}</div>
+    <div id="qfb"></div>
+    <div class="row"><button class="btn ghost sm" onclick="quizNext()">Saltear →</button>
+      <button class="btn ghost sm" onclick="${QUIZ.back}">← Salir</button></div></div>`;
+}
+function quizAns(k){
+  const it=QUIZ.items[QUIZ.i],ok=k===it.answer;if(ok)QUIZ.score++;
+  [...document.querySelectorAll('#qopts .opt')].forEach((b,idx)=>{b.disabled=true;
+    if(idx===it.answer)b.style.borderColor="var(--good)";
+    if(idx===k&&!ok)b.style.borderColor="var(--bad)";});
+  document.getElementById("qfb").innerHTML=`<div class="verdict ${ok?'ok':'no'}">${ok?'¡Bien! ':'No exactamente. '}${it.why||''}</div>
+    <button class="btn" onclick="quizNext()">${QUIZ.i+1>=QUIZ.items.length?'Ver resultado':'Siguiente →'}</button>`;
+}
+function quizNext(){QUIZ.i++;quizRender();}
+function quizDone(){app.innerHTML=`<div class="card">
+  <div class="crumbs">${QUIZ.title}</div><h2>Resultado</h2>
+  <div class="verdict ok">Acertaste ${QUIZ.score} de ${QUIZ.items.length}.</div>
+  <button class="btn" onclick="quizStart(QUIZ.items,QUIZ.title,QUIZ.back)">Repetir</button>
+  <button class="btn ghost" onclick="${QUIZ.back}">Volver</button></div>`;}
+
+/* --- reflexión abierta (no autocorrige: deja pensando) --- */
+let REFL=null;
+function reflectStart(items,back){REFL={items,i:0,back};reflRender();}
+function reflRender(){
+  if(REFL.i>=REFL.items.length){app.innerHTML=`<div class="card">
+    <div class="verdict ok">¡Listo! Estas preguntas no tienen una única respuesta correcta: lo importante es cómo las pensaron y discutieron.</div>
+    <button class="btn" onclick="${REFL.back}">Volver</button></div>`;return;}
+  const it=REFL.items[REFL.i];
+  app.innerHTML=`<div class="card">
+    <div class="crumbs">Para pensar · ${REFL.i+1}/${REFL.items.length}</div>
+    <div class="banner"><div class="qq">${it.q}</div></div>
+    <label>Anotá tu idea</label>
+    <textarea id="refl_t" rows="3" style="width:100%;background:#0b1220;color:var(--txt);border:1px solid #334155;border-radius:10px;padding:11px;font-family:inherit;font-size:1rem"></textarea>
+    <button class="btn" onclick="reflPista()">Ver una pista para discutir</button>
+    <div id="reflp"></div>
+    <div class="row"><button class="btn ghost sm" onclick="REFL.i++;reflRender()">Saltear →</button>
+      <button class="btn ghost sm" onclick="${REFL.back}">← Salir</button></div></div>`;
+}
+function reflPista(){const it=REFL.items[REFL.i];
+  document.getElementById("reflp").innerHTML=`<div class="hint">${it.pista}</div>
+    <button class="btn" onclick="REFL.i++;reflRender()">${REFL.i+1>=REFL.items.length?'Terminar':'Siguiente pregunta →'}</button>`;}
+
+/* ===================== PENSAR COMO EN PYTHON ===================== */
+const PYPRED_ITEMS=[
+ {code:`# tabla ventas:\n# Remera  Bariloche  12000\n# Buzo    Bariloche  25000\n# Gorra   VLA         8000\n\ndf[df["ciudad"] == "Bariloche"]`,
+  q:"¿Cuántas filas devuelve?",options:["1","2","3"],answer:1,
+  why:"Dos filas tienen ciudad = Bariloche (Remera y Buzo)."},
+ {code:`# misma tabla ventas\ndf[df["ciudad"] == "Bariloche"]["monto"].sum()`,
+  q:"¿Qué número imprime?",options:["8000","25000","37000","45000"],answer:2,
+  why:"Suma los montos de Bariloche: 12000 + 25000 = 37000."},
+ {code:`# montos: 12000, 25000, 8000\ndf["monto"].mean()`,
+  q:"¿Qué imprime?",options:["8000","15000","45000"],answer:1,
+  why:"Promedio = (12000 + 25000 + 8000) / 3 = 15000."},
+ {code:`df.groupby("ciudad")["monto"].sum()`,
+  q:"¿Qué te devuelve?",options:["La venta más grande","El total de monto por cada ciudad","Todas las ventas ordenadas"],answer:1,
+  why:"groupby junta por ciudad y suma el monto de cada grupo."}
+];
+const PYFILL_ITEMS=[
+ {goal:"Quedarte solo con las filas de temporada Alta.",
+  code:`d = df[df["temporada"] ___ "Alta"]`,options:["==","=",">",".contains"],answer:0,
+  why:"Para comparar (‘es igual a’) se usa ==. Un solo = sirve para asignar, no para comparar."},
+ {goal:"Calcular el promedio de la columna visitantes.",
+  code:`df["visitantes"].___()`,options:["sum","mean","count","max"],answer:1,
+  why:"mean() es el promedio. sum() sumaría, count() contaría."},
+ {goal:"Contar cuántas filas hay de cada temporada.",
+  code:`df.groupby("temporada").___()`,options:["size","mean","sort"],answer:0,
+  why:"size() cuenta cuántas filas cayeron en cada grupo."}
+];
+function pyFillToMC(it){return {code:it.code,q:"Objetivo: "+it.goal+"  ·  ¿Qué va en el hueco?",options:it.options,answer:it.answer,why:it.why};}
+function pyHome(){
+  fichaBtn.style.display="none";
+  app.innerHTML=`<div class="card">
+    <h2>Pensar como en Python</h2>
+    <p class="muted">Acá no copiás código: lo <b>leés y decidís</b> qué hace. Es el mismo Pandas que aparece en el constructor de consultas.</p>
+    <div class="chal" onclick="quizStart(PYPRED_ITEMS,'Predecí qué hace el código','pyHome()')">
+      <div class="ct">Predecí qué hace</div>
+      <div class="cd">Te muestro un código y una tabla chica. Adiviná el resultado ANTES de que corra.</div></div>
+    <div class="chal" onclick="quizStart(PYFILL_ITEMS.map(pyFillToMC),'Completá la línea que falta','pyHome()')">
+      <div class="ct">Completá la línea que falta</div>
+      <div class="cd">Te doy el objetivo y una línea con un hueco. Elegí la pieza correcta.</div></div>
+    <button class="btn ghost" onclick="home()">← Volver al inicio</button>
+  </div>`;
+}
+
+/* ===================== MISIÓN: DIAGRAMAS DE FLUJO ===================== */
+const FLOW_ITEMS=[
+ {q:"¿Cuánto vendió Bariloche en total?",
+  steps:["INICIO","Filtrar: ciudad = Bariloche","Sumar: la columna monto","FIN: mostrar el resultado"],
+  distract:["Filtrar: producto = Buzo","Contar las filas"],
+  why:"Primero se achica la tabla con el filtro y recién después se hace el cálculo."},
+ {q:"¿Cuántas ventas hubo del producto Buzo?",
+  steps:["INICIO","Filtrar: producto = Buzo","Contar las filas","FIN: mostrar el resultado"],
+  distract:["Sumar: la columna monto","Ordenar: de mayor a menor"]},
+ {q:"¿Cuánto vendió Bariloche en Buzos?",
+  steps:["INICIO","Filtrar: ciudad = Bariloche","Filtrar: producto = Buzo","Sumar: la columna monto","FIN: mostrar el resultado"],
+  distract:["Agrupar: por ciudad","Contar las filas"],
+  why:"Dos condiciones = dos bloques de filtro, uno atrás del otro. Después la operación."},
+ {q:"¿Qué temporada recibe más visitantes en total?",
+  steps:["INICIO","Agrupar: por temporada","Sumar: visitantes de cada grupo","Ordenar: de mayor a menor","FIN: la de arriba es la respuesta"],
+  distract:["Filtrar: temporada = Alta","Contar las filas"],
+  why:"Cuando la pregunta es 'por cada…', el diagrama arranca agrupando."},
+ {q:"¿Cuál es la especie nativa con más registros?",
+  steps:["INICIO","Filtrar: origen = nativa","Ordenar: registros de mayor a menor","Tomar la primera fila","FIN: mostrar el resultado"],
+  distract:["Agrupar: por origen","Sumar: la columna registros"]}
+];
+let FLOW=null;
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function flowShape(s){const t=/^(INICIO|FIN)/.test(s);return `<span style="${t?'font-weight:700;color:var(--accent)':''}">${s}</span>`;}
+function flowStart(items,title,back){FLOW={items,i:0,title,back,score:0};flowLoad();}
+function flowLoad(){if(FLOW.i>=FLOW.items.length)return flowDone();const it=FLOW.items[FLOW.i];FLOW.chosen=[];FLOW.pool=shuffle([...it.steps,...(it.distract||[])]);flowRender();}
+function flowRender(fb){
+  const it=FLOW.items[FLOW.i];
+  const chosenHTML=FLOW.chosen.length
+    ?FLOW.chosen.map((s,k)=>`<div style="background:var(--card2);border:1px solid #3a4a63;border-radius:10px;padding:10px 14px;min-width:60%;text-align:center;cursor:pointer" onclick="flowRemove(${k})">${flowShape(s)}</div>`).join('<div style="color:var(--accent);font-weight:700">↓</div>')
+    :'<div class="muted" style="font-size:.85rem">Tocá los bloques de abajo en orden. Tocá un bloque puesto para sacarlo.</div>';
+  const poolHTML=FLOW.pool.map((s,idx)=>{const used=FLOW.chosen.includes(s);return `<button class="opt" ${used?'disabled style="opacity:.35"':''} onclick="flowPick(${idx})">${s}</button>`;}).join("");
+  app.innerHTML=`<div class="card">
+    <div class="crumbs">${FLOW.title} · ${FLOW.i+1}/${FLOW.items.length}</div>
+    <div class="banner"><div class="muted" style="font-size:.8rem">Consulta a resolver:</div><div class="qq">${it.q}</div></div>
+    <div class="step-label">TU DIAGRAMA DE FLUJO</div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin:6px 0 12px">${chosenHTML}</div>
+    <div class="step-label">BLOQUES (tocá en orden)</div>
+    <div class="opts">${poolHTML}</div>
+    <div id="flowfb">${fb||""}</div>
+    <div class="row"><button class="btn" onclick="flowCheck()">Comprobar</button>
+      <button class="btn ghost" onclick="flowLoad()">Reiniciar</button></div>
+    <div class="row"><button class="btn ghost sm" onclick="FLOW.i++;flowLoad()">Saltear →</button>
+      <button class="btn ghost sm" onclick="${FLOW.back}">← Salir</button></div></div>`;
+}
+function flowPick(idx){const s=FLOW.pool[idx];if(!FLOW.chosen.includes(s))FLOW.chosen.push(s);flowRender();}
+function flowRemove(k){FLOW.chosen.splice(k,1);flowRender();}
+function flowCheck(){const it=FLOW.items[FLOW.i];
+  const ok=FLOW.chosen.length===it.steps.length&&FLOW.chosen.every((s,k)=>s===it.steps[k]);
+  if(ok){FLOW.score++;
+    flowRender(`<div class="verdict ok">¡Correcto! Ese es el paso a paso de la consulta. ${it.why||''}</div>
+      <button class="btn" onclick="FLOW.i++;flowLoad()">${FLOW.i+1>=FLOW.items.length?'Ver resultado':'Siguiente consulta →'}</button>`);
+  }else{
+    flowRender(`<div class="verdict no">Todavía no. ${it.hint||'Acordate: primero se filtra, después la operación, y al final el resultado.'}</div>`);
+  }
+}
+function flowDone(){app.innerHTML=`<div class="card"><div class="crumbs">${FLOW.title}</div><h2>Resultado</h2>
+  <div class="verdict ok">Armaste bien ${FLOW.score} de ${FLOW.items.length} diagramas.</div>
+  <button class="btn" onclick="flowStart(FLOW.items,FLOW.title,FLOW.back)">Repetir</button>
+  <button class="btn ghost" onclick="${FLOW.back}">Volver</button></div>`;}
+
+/* --- Hacé de filtro: el rombo de decisión aplicado a cada fila --- */
+const FILT_ITEMS=[
+ {cond:'ciudad = "Bariloche"',rows:[{t:"Remera · Bariloche · 12000",p:true},{t:"Gorra · VLA · 8000",p:false},{t:"Buzo · Bariloche · 25000",p:true}]},
+ {cond:'monto > 10000',rows:[{t:"Remera · 12000",p:true},{t:"Gorra · 8000",p:false},{t:"Buzo · 25000",p:true}]},
+ {cond:'origen = "nativa"',rows:[{t:"Coihue · nativa",p:true},{t:"Retama · exótica",p:false},{t:"Lenga · nativa",p:true}]}
+];
+let FILT=null;
+function filtStart(items,back){FILT={items,i:0,r:0,back};filtRender();}
+function filtRender(fb){
+  if(FILT.i>=FILT.items.length){app.innerHTML=`<div class="card"><div class="verdict ok">¡Listo!</div><button class="btn" onclick="${FILT.back}">Volver</button></div>`;return;}
+  const it=FILT.items[FILT.i];
+  if(FILT.r>=it.rows.length){const kept=it.rows.filter(x=>x.p).length;
+    app.innerHTML=`<div class="card">
+      <div class="crumbs">Hacé de filtro · ${FILT.i+1}/${FILT.items.length}</div>
+      <div class="verdict ok">El filtro <b>${it.cond}</b> dejó ${kept} de ${it.rows.length} filas.</div>
+      <p class="muted" style="font-size:.85rem">Un filtro es una DECISIÓN que se toma en cada fila: si cumple la condición queda, si no se descarta. Eso es un condicional (el rombo del diagrama).</p>
+      <div class="row"><button class="btn" onclick="FILT.i++;FILT.r=0;filtRender()">${FILT.i+1<FILT.items.length?'Siguiente filtro →':'Terminar'}</button>
+        <button class="btn ghost" onclick="${FILT.back}">← Salir</button></div></div>`;return;}
+  const row=it.rows[FILT.r];
+  app.innerHTML=`<div class="card">
+    <div class="crumbs">Hacé de filtro · ${FILT.i+1}/${FILT.items.length} · fila ${FILT.r+1}/${it.rows.length}</div>
+    <div class="banner"><div class="muted" style="font-size:.8rem">Condición del filtro (rombo de decisión):</div><div class="qq">¿la fila cumple  ${it.cond} ?</div></div>
+    <div class="recipe">Fila actual:  ${row.t}</div>
+    <div class="row"><button class="btn" onclick="filtAns(true)">SÍ, queda</button>
+      <button class="btn ghost" onclick="filtAns(false)">NO, se descarta</button></div>
+    <div id="filtfb">${fb||""}</div>
+    <div class="row"><button class="btn ghost sm" onclick="FILT.i++;FILT.r=0;filtRender()">Saltear filtro →</button>
+      <button class="btn ghost sm" onclick="${FILT.back}">← Salir</button></div></div>`;
+}
+function filtAns(v){const it=FILT.items[FILT.i],row=it.rows[FILT.r],ok=v===row.p;
+  document.getElementById("filtfb").innerHTML=`<div class="verdict ${ok?'ok':'no'}">${ok?'¡Bien! ':'Ojo. '}${row.t}: ${row.p?'CUMPLE la condición → queda':'NO cumple → se descarta'}.</div>
+    <button class="btn" onclick="FILT.r++;filtRender()">${FILT.r+1>=it.rows.length?'Ver cuántas quedaron':'Siguiente fila →'}</button>`;}
+
+const FLOWREFLECT_ITEMS=[
+ {q:"Pensá la consulta: '¿cuánto gastó en promedio cada turista en temporada alta?'. ¿Qué bloques necesita el diagrama y en qué orden?",
+  pista:"INICIO → Filtrar: temporada = Alta → Promediar: la columna gasto → FIN. El filtro siempre va antes de la operación."},
+ {q:"Una consulta con DOS filtros: ¿cambia el resultado si invertís el orden de los dos filtros? ¿Por qué?",
+  pista:"El resultado no cambia (la fila tiene que cumplir las dos condiciones igual), pero el diagrama muestra que son dos decisiones distintas, una atrás de la otra."}
+];
+function flowHome(){
+  fichaBtn.style.display="none";
+  app.innerHTML=`<div class="card">
+    <h2>Misión: diagramas de flujo</h2>
+    <p class="muted">Antes de tocar los datos, dibujamos el <b>paso a paso</b> de la consulta. El diagrama de flujo es el plano del algoritmo.</p>
+    <div class="recipe">INICIO → (filtrar…) → (operación) → FIN</div>
+    <div class="chal" onclick="flowStart(FLOW_ITEMS,'Armá el paso a paso','flowHome()')">
+      <div class="ct">Armá el paso a paso</div>
+      <div class="cd">Te doy la consulta y ordenás los bloques del diagrama. Desde una consulta simple hasta una con dos filtros o con agrupar.</div></div>
+    <div class="chal" onclick="filtStart(FILT_ITEMS,'flowHome()')">
+      <div class="ct">Hacé de filtro (el rombo de decisión)</div>
+      <div class="cd">Fila por fila decidís SÍ o NO. Un filtro es un condicional que se aplica a cada fila.</div></div>
+    <div class="chal" onclick="reflectStart(FLOWREFLECT_ITEMS,'flowHome()')">
+      <div class="ct">Para pensar</div>
+      <div class="cd">Diseñá el diagrama de una consulta compleja. Sin respuesta única.</div></div>
+    <button class="btn ghost" onclick="home()">← Volver al inicio</button>
+  </div>`;
+}
 
 /* ===================== INICIO ===================== */
 home();
