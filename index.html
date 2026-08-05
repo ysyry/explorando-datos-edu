@@ -170,7 +170,8 @@ function home(){
     <button class="btn ghost" onclick="loadDemo()">Probar con datos de ejemplo (libre)</button>
     ${hasSaved?`<button class="btn" onclick="if(load())setupProyecto()">▶ Continuar mi proyecto guardado</button>
       <button class="btn ghost" onclick="reset()">Borrar y empezar de cero</button>`:""}
-  </div>`;
+  </div>
+  <button class="btn ghost" onclick="portal()">← Volver al panel</button>`;
   const up=document.getElementById("up"),file=document.getElementById("file");
   up.onclick=()=>file.click();
   file.onchange=e=>{const f=e.target.files[0];if(!f)return;const rd=new FileReader();
@@ -901,8 +902,1046 @@ function flowHome(){
   </div>`;
 }
 
+/* =========================================================================
+   ============  TRACK ROBÓTICA  ============
+   Portal general + misiones de programación con placa simulada.
+   Todo aditivo: no toca nada del track de datos.
+   ========================================================================= */
+
+/* ---------- estilos propios del track ---------- */
+(function(){const s=document.createElement("style");s.textContent=`
+  .track{display:grid;gap:14px;margin-top:6px}
+  .trackcard{background:var(--card);border-radius:18px;padding:22px;border:2px solid transparent;
+    cursor:pointer;transition:.15s;box-shadow:0 8px 30px rgba(0,0,0,.3)}
+  .trackcard:hover{border-color:var(--accent);transform:translateY(-2px)}
+  .trackcard h3{margin:0 0 6px;font-size:1.25rem}
+  .trackcard .tg{font-size:.78rem;color:var(--warn);font-weight:700;letter-spacing:.4px;text-transform:uppercase}
+  .trackcard p{margin:8px 0 0;color:var(--muted);font-size:.9rem;line-height:1.5}
+  .mgrid{display:grid;gap:10px;margin-top:4px}
+  .mrow{display:flex;align-items:center;gap:12px;background:var(--card2);border-radius:12px;padding:13px 15px;
+    cursor:pointer;border:2px solid transparent;transition:.15s}
+  .mrow:hover{border-color:var(--accent)}
+  .mrow.lock{opacity:.45;cursor:not-allowed}
+  .mrow.lock:hover{border-color:transparent}
+  .mnum{width:30px;height:30px;flex:none;border-radius:50%;background:#0b1220;display:grid;place-items:center;
+    font-weight:800;font-size:.9rem;color:var(--muted)}
+  .mrow.done .mnum{background:var(--good);color:#06281d}
+  .mrow .mt{flex:1;font-weight:700;font-size:.98rem}
+  .mrow .mc{font-size:.75rem;color:var(--muted);font-weight:600}
+  .board{background:#0b1220;border:1px solid #334155;border-radius:14px;padding:16px;margin:12px 0}
+  .pins{display:flex;flex-wrap:wrap;gap:14px;justify-content:center;margin-bottom:6px}
+  .pin{text-align:center;width:62px}
+  .bulb{width:30px;height:30px;border-radius:50%;margin:0 auto 5px;background:#1c2740;border:2px solid #334155;transition:.12s}
+  .bulb.on{box-shadow:0 0 16px 4px currentColor;background:currentColor;border-color:currentColor}
+  .pin .pl{font-size:.68rem;color:var(--muted);line-height:1.25}
+  .pin .pn{font-family:ui-monospace,monospace;font-size:.8rem;font-weight:700}
+  .sensorbox{margin-top:14px;padding-top:12px;border-top:1px solid #1e293b}
+  .sensorbox input[type=range]{width:100%;accent-color:var(--accent)}
+  .sread{display:flex;justify-content:space-between;font-family:ui-monospace,monospace;font-size:.85rem;margin-top:4px}
+  .sread b{color:var(--accent)}
+  .ed{width:100%;min-height:190px;background:#0b1220;color:#e8f0ff;border:1px solid #334155;border-radius:12px;
+    padding:12px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.95rem;line-height:1.55;
+    resize:vertical;tab-size:4;white-space:pre;overflow-wrap:normal;overflow-x:auto}
+  .ed:focus{outline:none;border-color:var(--accent)}
+  .runbar{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+  .runbar .btn{width:auto;flex:1;margin-top:0;min-width:120px}
+  .monitor{background:#06101f;border:1px solid #334155;border-radius:10px;padding:10px 12px;margin-top:10px;
+    font-family:ui-monospace,monospace;font-size:.84rem;max-height:130px;overflow:auto;color:var(--good);white-space:pre-wrap}
+  .monitor .ph{color:#475569}
+  .vars{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;min-height:10px}
+  .vpill{background:#0b1220;border:1px solid #334155;border-radius:8px;padding:4px 10px;
+    font-family:ui-monospace,monospace;font-size:.8rem}
+  .vpill b{color:var(--b1)}
+  .err{background:rgba(248,113,113,.12);border-left:3px solid var(--bad);color:#fecaca;border-radius:8px;
+    padding:10px 12px;margin-top:10px;font-size:.87rem}
+  .teoria{background:rgba(56,189,248,.08);border:1px solid #2b4a63;border-radius:12px;padding:13px 15px;margin:10px 0;
+    font-size:.9rem;line-height:1.6}
+  .teoria code{background:#0b1220;padding:1px 6px;border-radius:5px;font-size:.86rem;color:var(--accent)}
+  .consigna{background:var(--card2);border-radius:12px;padding:14px 16px;margin-bottom:10px}
+  .consigna .cl{font-size:.72rem;color:var(--warn);font-weight:800;letter-spacing:.5px}
+  .consigna p{margin:6px 0 0;font-size:1rem;line-height:1.5}
+  .airule{background:linear-gradient(90deg,rgba(244,114,182,.13),rgba(167,139,250,.13));border:1px solid #6d4b7a;
+    border-radius:14px;padding:16px;margin:14px 0;text-align:center}
+  .airule b{display:block;font-size:1.05rem;margin-bottom:5px}
+  .slides{counter-reset:s}
+  .snum{font-size:.75rem;color:var(--muted);font-weight:700;letter-spacing:.4px}
+`;document.head.appendChild(s)})();
+
+function setHead(t,s){const h=document.querySelector("header h1"),p=document.querySelector("header p");
+  if(h)h.textContent=t;if(p)p.textContent=s}
+
+/* ===================== PORTAL ===================== */
+function portal(){
+  fichaBtn.style.display="none";
+  setHead("Laboratorio de Tecnologías Creativas","3° año · elegí por dónde entrar");
+  app.innerHTML=`<div class="track">
+    <div class="trackcard" onclick="goDatos()">
+      <div class="tg">Track 1</div>
+      <h3>Explorando datos</h3>
+      <p>Armá consultas sobre una tabla paso a paso, practicá los verbos, el ciclo de datos y los diagramas de flujo.
+         Es lo que veníamos haciendo.</p>
+    </div>
+    <div class="trackcard" onclick="roboHome()">
+      <div class="tg">Track 2 · nuevo</div>
+      <h3>Explorando robótica</h3>
+      <p>Programá una placa de verdad. Empezás prendiendo una luz y terminás construyendo un aparato que mide algo
+         y decide solo. Misión por misión.</p>
+    </div>
+  </div>`;
+}
+function goDatos(){setHead("Constructor de Consultas","VLA en datos · armá tu consulta paso a paso");home()}
+
+/* =========================================================================
+   MOTOR: intérprete de un subconjunto de Python
+   Soporta: comentarios, variables, cuentas, comparaciones, and/or/not (y/o/no),
+   if / elif / else, while, for i in range(n), y las funciones de la placa.
+   ========================================================================= */
+
+function tk(line,ln){
+  const T=[];let i=0;
+  const isD=c=>c>="0"&&c<="9", isA=c=>/[A-Za-z_]/.test(c), isAN=c=>/[A-Za-z0-9_]/.test(c);
+  while(i<line.length){
+    const c=line[i];
+    if(c===" "||c==="\t"){i++;continue}
+    if(c==="#")break;
+    if(isD(c)||(c==="."&&isD(line[i+1]))){let j=i;while(j<line.length&&/[0-9.]/.test(line[j]))j++;
+      T.push({t:"num",v:parseFloat(line.slice(i,j)),ln});i=j;continue}
+    if(isA(c)){let j=i;while(j<line.length&&isAN(line[j]))j++;T.push({t:"name",v:line.slice(i,j),ln});i=j;continue}
+    if(c==='"'||c==="'"){const q=c;let j=i+1,s="";while(j<line.length&&line[j]!==q){s+=line[j];j++}
+      if(j>=line.length)throw{ln,msg:"Te faltó cerrar la comilla"};T.push({t:"str",v:s,ln});i=j+1;continue}
+    const two=line.slice(i,i+2);
+    if(["==","!=","<=",">=","//"].includes(two)){T.push({t:"op",v:two,ln});i+=2;continue}
+    if("+-*/%<>=(),:".includes(c)){T.push({t:"op",v:c,ln});i++;continue}
+    throw{ln,msg:`No entiendo el símbolo "${c}"`};
+  }
+  return T;
+}
+function P(T,ln){
+  let i=0;
+  const peek=()=>T[i], eat=v=>{if(T[i]&&T[i].v===v){i++;return true}return false};
+  const expect=v=>{if(!eat(v))throw{ln,msg:`Esperaba "${v}" acá`}};
+  function or_(){let l=and_();while(peek()&&(peek().v==="or"||peek().v==="o")){i++;l={k:"log",op:"or",l,r:and_()}}return l}
+  function and_(){let l=not_();while(peek()&&(peek().v==="and"||peek().v==="y")){i++;l={k:"log",op:"and",l,r:not_()}}return l}
+  function not_(){if(peek()&&(peek().v==="not"||peek().v==="no")){i++;return{k:"not",e:not_()}}return cmp_()}
+  function cmp_(){let l=add_();while(peek()&&["==","!=","<=",">=","<",">"].includes(peek().v)){const o=T[i++].v;l={k:"cmp",op:o,l,r:add_()}}return l}
+  function add_(){let l=mul_();while(peek()&&(peek().v==="+"||peek().v==="-")){const o=T[i++].v;l={k:"bin",op:o,l,r:mul_()}}return l}
+  function mul_(){let l=un_();while(peek()&&["*","/","%","//"].includes(peek().v)){const o=T[i++].v;l={k:"bin",op:o,l,r:un_()}}return l}
+  function un_(){if(peek()&&peek().v==="-"){i++;return{k:"neg",e:un_()}}return pri_()}
+  function pri_(){
+    const t=peek();
+    if(!t)throw{ln,msg:"La línea quedó incompleta"};
+    if(t.t==="num"){i++;return{k:"num",v:t.v}}
+    if(t.t==="str"){i++;return{k:"str",v:t.v}}
+    if(t.v==="("){i++;const e=or_();expect(")");return e}
+    if(t.t==="name"){i++;
+      if(peek()&&peek().v==="("){i++;const args=[];
+        if(!(peek()&&peek().v===")")){args.push(or_());while(eat(","))args.push(or_())}
+        expect(")");return{k:"call",n:t.v,args,ln}}
+      return{k:"var",n:t.v,ln}}
+    throw{ln,msg:`No esperaba "${t.v}" acá`};
+  }
+  const e=or_();
+  if(i<T.length)throw{ln,msg:`Sobra "${T[i].v}" al final de la línea`};
+  return e;
+}
+function parsePy(src){
+  const raw=src.replace(/\r/g,"").split("\n");
+  const L=[];
+  raw.forEach((s,k)=>{const noC=s.split("#")[0];
+    if(!noC.trim())return;
+    L.push({ind:(s.match(/^[ \t]*/)[0].replace(/\t/g,"    ")).length,txt:noC.trim(),ln:k+1})});
+  let p=0;
+  function block(minInd){
+    const out=[];
+    while(p<L.length&&L[p].ind>=minInd){
+      if(L[p].ind>minInd)throw{ln:L[p].ln,msg:"Esta línea tiene demasiada sangría"};
+      out.push(stmt(minInd));
+    }
+    return out;
+  }
+  function body(cur,ln){
+    if(p>=L.length||L[p].ind<=cur)throw{ln,msg:"Después de los dos puntos falta el bloque indentado (4 espacios)"};
+    return block(L[p].ind);
+  }
+  function stmt(cur){
+    const l=L[p], t=l.txt, ln=l.ln;
+    const head=(kw)=>t===kw||t.startsWith(kw+" ")||t.startsWith(kw+"(");
+    if(head("if")||head("while")){
+      const kw=head("if")?"if":"while";
+      if(!t.endsWith(":"))throw{ln,msg:`Al final del ${kw} falta los dos puntos ":"`};
+      const cond=P(tk(t.slice(kw.length,-1),ln),ln);p++;
+      const b=body(cur,ln);
+      if(kw==="while")return{k:"while",cond,b,ln};
+      const node={k:"if",arms:[{cond,b}],els:null,ln};
+      while(p<L.length&&L[p].ind===cur&&(L[p].txt.startsWith("elif ")||L[p].txt==="else:"||L[p].txt.startsWith("else:"))){
+        const e=L[p];
+        if(e.txt.startsWith("elif")){
+          if(!e.txt.endsWith(":"))throw{ln:e.ln,msg:'Al final del elif falta los dos puntos ":"'};
+          const c2=P(tk(e.txt.slice(4,-1),e.ln),e.ln);p++;node.arms.push({cond:c2,b:body(cur,e.ln)});
+        }else{p++;node.els=body(cur,e.ln);break}
+      }
+      return node;
+    }
+    if(head("for")){
+      const m=t.match(/^for\s+([A-Za-z_]\w*)\s+in\s+range\((.+)\)\s*:$/);
+      if(!m)throw{ln,msg:'El for se escribe así:  for i in range(5):'};
+      const n=P(tk(m[2],ln),ln);p++;return{k:"for",v:m[1],n,b:body(cur,ln),ln};
+    }
+    if(t.startsWith("else")||t.startsWith("elif"))throw{ln,msg:`"${t.split(" ")[0]}" sin un if arriba`};
+    const eq=t.search(/(?<![=!<>])=(?!=)/);
+    if(eq>0&&/^[A-Za-z_]\w*\s*$/.test(t.slice(0,eq))){
+      const name=t.slice(0,eq).trim(), e=P(tk(t.slice(eq+1),ln),ln);p++;return{k:"set",n:name,e,ln};
+    }
+    const e=P(tk(t,ln),ln);p++;
+    if(e.k!=="call")throw{ln,msg:"Esta línea no hace nada. ¿Te faltó una orden o un = ?"};
+    return{k:"exp",e,ln};
+  }
+  const prog=block(0);
+  if(p<L.length)throw{ln:L[p].ln,msg:"No entiendo la sangría de esta línea"};
+  return prog;
+}
+
+/* ---------- placa simulada ---------- */
+const LEDS=[{p:4,c:"#f87171",l:"rojo"},{p:5,c:"#fbbf24",l:"amarillo"},{p:6,c:"#34d399",l:"verde"},
+            {p:8,c:"#38bdf8",l:"bomba"},{p:9,c:"#f472b6",l:"buzzer"},{p:13,c:"#e2e8f0",l:"LED placa"}];
+let SIM={pins:{},an:{A0:512},out:[],vars:{},trans:0,servo:null};
+let RUN={stop:true,live:false};
+function simReset(keepAn){const a=keepAn?SIM.an:{A0:512};SIM={pins:{},an:a,out:[],vars:{},trans:0,servo:null}}
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+
+async function execPy(prog,ctx){
+  const env=ctx.env;
+  let steps=0, vt=0;
+  const bump=()=>{if(++steps>ctx.maxSteps)throw{ln:0,msg:"El programa hizo demasiadas cosas. ¿Un bucle sin esperar()?"}};
+  async function ev(n){
+    bump();
+    switch(n.k){
+      case "num":return n.v;
+      case "str":return n.v;
+      case "var":{
+        if(/^A[0-5]$/.test(n.n))return n.n;
+        if(n.n==="True")return true; if(n.n==="False")return false;
+        if(!(n.n in env))throw{ln:n.ln,msg:`La variable "${n.n}" todavía no existe. ¿La escribiste distinto arriba?`};
+        return env[n.n]}
+      case "neg":return -(await ev(n.e));
+      case "not":return !(await ev(n.e));
+      case "log":{const l=await ev(n.l);
+        if(n.op==="and")return l?await ev(n.r):l; return l?l:await ev(n.r)}
+      case "cmp":{const a=await ev(n.l),b=await ev(n.r);
+        switch(n.op){case "==":return a===b;case "!=":return a!==b;case "<":return a<b;
+          case ">":return a>b;case "<=":return a<=b;case ">=":return a>=b}}
+      case "bin":{const a=await ev(n.l),b=await ev(n.r);
+        switch(n.op){case "+":return (typeof a==="string"||typeof b==="string")?String(a)+String(b):a+b;
+          case "-":return a-b;case "*":return a*b;
+          case "/":{if(b===0)throw{ln:n.ln,msg:"No se puede dividir por cero"};return a/b}
+          case "//":return Math.floor(a/b);case "%":return a%b}}
+      case "call":return await call(n);
+    }
+  }
+  async function call(n){
+    const a=[];for(const x of n.args)a.push(await ev(x));
+    const need=(k)=>{if(a.length<k)throw{ln:n.ln,msg:`A ${n.n}() le faltan datos adentro del paréntesis`}};
+    switch(n.n){
+      case "prender":{need(1);const p=+a[0];if(SIM.pins[p]!==1)SIM.trans++;SIM.pins[p]=1;ctx.paint();return null}
+      case "apagar":{need(1);const p=+a[0];if(SIM.pins[p]===1)SIM.trans++;SIM.pins[p]=0;ctx.paint();return null}
+      case "leer":{need(1);const p=a[0];const v=SIM.an[p];
+        if(v===undefined)throw{ln:n.ln,msg:`No hay ningún sensor en ${p}. Probá con A0`};return v}
+      case "mostrar":{need(1);SIM.out.push(String(typeof a[0]==="number"?Math.round(a[0]*100)/100:a[0]));
+        if(SIM.out.length>200)SIM.out.shift();ctx.paint();return null}
+      case "servo":{need(2);SIM.servo=+a[1];ctx.paint();return null}
+      case "esperar":{need(1);const s=Math.max(0,+a[0]);
+        if(ctx.live){await sleep(Math.min(s,3)*1000)}else{vt+=s;if(vt>ctx.maxVT)throw{stopok:true}}
+        return null}
+      case "redondear":{need(1);return Math.round(a[0])}
+      case "range":throw{ln:n.ln,msg:"range() solo se usa adentro de un for"};
+      default:throw{ln:n.ln,msg:`No conozco la orden "${n.n}()". Mirá la lista de órdenes abajo.`};
+    }
+  }
+  async function block(b){for(const s of b){if(RUN.stop&&ctx.live)throw{stopok:true};await run1(s)}}
+  async function run1(s){
+    bump();
+    switch(s.k){
+      case "set":{env[s.n]=await ev(s.e);SIM.vars=Object.assign({},env);ctx.paint();return}
+      case "exp":await ev(s.e);return;
+      case "if":{for(const arm of s.arms){if(await ev(arm.cond))return await block(arm.b)}
+        if(s.els)return await block(s.els);return}
+      case "while":{let guard=0;
+        while(await ev(s.cond)){
+          await block(s.b);
+          if(ctx.live){await sleep(0)}else{vt+=0.001;if(vt>ctx.maxVT)throw{stopok:true}}
+          if(RUN.stop&&ctx.live)throw{stopok:true};
+          if(++guard>ctx.maxLoop)throw{stopok:true};
+        }return}
+      case "for":{const n=Math.min(+(await ev(s.n)),ctx.maxLoop);
+        for(let k=0;k<n;k++){env[s.v]=k;SIM.vars=Object.assign({},env);await block(s.b);
+          if(ctx.live){await sleep(0)}
+          if(RUN.stop&&ctx.live)throw{stopok:true}}
+        return}
+    }
+  }
+  await block(prog);
+}
+
+/* corre el código; devuelve {err, pins, out, trans, servo} */
+async function roboRun(code,opt){
+  opt=opt||{};
+  const live=!!opt.live;
+  simReset(!!opt.keepAn);
+  if(opt.an)SIM.an=Object.assign({},SIM.an,opt.an);
+  const ctx={env:{},live,paint:live?roboPaint:()=>{},maxSteps:live?4e6:2e5,maxVT:opt.maxVT||14,maxLoop:live?1e9:4000};
+  RUN.stop=false;RUN.live=live;
+  let err=null;
+  try{
+    const prog=parsePy(code);
+    if(!prog.length)err={ln:0,msg:"Todavía no escribiste ninguna orden."};
+    else await execPy(prog,ctx);
+  }catch(e){ if(!e||!e.stopok) err=(e&&e.msg)?e:{ln:0,msg:"Algo salió mal: "+(e&&e.message||e)} }
+  RUN.stop=true;
+  if(live)roboPaint();
+  return {err,pins:Object.assign({},SIM.pins),out:SIM.out.slice(),trans:SIM.trans,servo:SIM.servo};
+}
+
+/* ===================== MISIONES ===================== */
+const RKEY="vla_robotica_v1";
+let RDONE=(()=>{try{return JSON.parse(localStorage.getItem(RKEY))||[]}catch(e){return[]}})();
+const rsave=()=>{try{localStorage.setItem(RKEY,JSON.stringify(RDONE))}catch(e){}};
+const pct=v=>v*100/1023;
+
+const MIS=[
+{t:"Prendé la luz",c:"Instrucción",
+ g:"Hacé que se prenda el LED del pin 13.",
+ th:`Un <b>programa</b> es una lista de órdenes. La placa las lee de arriba hacia abajo y las hace una por una.<br>
+     <code>prender(13)</code> le manda corriente al pin 13 y el LED se enciende.`,
+ s:"# Escribí tu orden acá abajo\n",
+ chk:async r=>{const x=await r({});return{ok:x.pins[13]===1,
+   msg:x.pins[13]===1?"El LED del pin 13 quedó prendido.":"El LED del pin 13 sigue apagado."}}},
+
+{t:"Prendé y apagá",c:"esperar()",
+ g:"Prendé el LED del pin 13, esperá 1 segundo y apagalo.",
+ th:`<code>esperar(1)</code> frena el programa un segundo. Sin eso, la placa prende y apaga tan rápido
+     que el ojo no lo ve: para la computadora un segundo es una eternidad.`,
+ s:"prender(13)\n",
+ chk:async r=>{const x=await r({});
+   if(x.trans<2)return{ok:false,msg:"Faltó prender y después apagar."};
+   return{ok:x.pins[13]===0,msg:x.pins[13]===0?"Prendió y apagó.":"Quedó prendido al final: te faltó el apagar(13)."}}},
+
+{t:"Que parpadee para siempre",c:"while (bucle)",
+ g:"Hacé que el LED del pin 13 parpadee sin parar.",
+ th:`<code>while True:</code> quiere decir "repetí esto para siempre". Todo lo que va <b>indentado</b>
+     (con 4 espacios) abajo del <code>while</code> es lo que se repite.<br>
+     Ojo: si adentro del bucle no hay ningún <code>esperar()</code>, va tan rápido que no se ve nada.`,
+ s:"while True:\n    prender(13)\n",
+ chk:async r=>{const x=await r({});
+   return{ok:x.trans>=4,msg:x.trans>=4?`Parpadeó ${x.trans} veces.`:"No llegó a parpadear. ¿Prendés y apagás adentro del while, con esperar() en el medio?"}}},
+
+{t:"¿Cuánto mide el sensor?",c:"variable · leer()",
+ g:"Leé el sensor A0, guardá el valor en una variable y mostralo. Probá mover el deslizador y volver a ejecutar.",
+ th:`Una <b>variable</b> es un nombre que guarda un valor para usarlo después.<br>
+     <code>humedad = leer(A0)</code> le pide el número al sensor y lo guarda con el nombre <i>humedad</i>.<br>
+     <code>mostrar(humedad)</code> lo escribe en el monitor. El sensor devuelve un número entre <b>0 y 1023</b>.`,
+ s:"humedad = leer(A0)\n",
+ chk:async r=>{
+   for(const v of [200,800]){const x=await r({an:{A0:v}});
+     if(x.err)return{ok:false,msg:""};
+     const last=[...x.out].reverse().find(o=>!isNaN(parseFloat(o)));
+     if(last===undefined)return{ok:false,msg:"No mostraste nada. Te falta mostrar( )."};
+     if(Math.abs(parseFloat(last)-v)>0.5)return{ok:false,msg:`Con el sensor en ${v} mostraste ${last}. Tiene que mostrar lo que mide el sensor.`}}
+   return{ok:true,msg:"Leíste el sensor y lo mostraste."}}},
+
+{t:"De número raro a porcentaje",c:"cuenta · función lineal",
+ g:"El sensor da un número entre 0 y 1023. Mostralo como un porcentaje entre 0 y 100.",
+ th:`Nadie entiende "el sensor marca 743". Hay que <b>convertirlo</b>.<br>
+     Si 1023 es el 100%, entonces: <code>porcentaje = crudo * 100 / 1023</code><br>
+     Esto que acabás de escribir es una <b>función lineal</b>: la misma de Matemática, con su pendiente.
+     En programación se le dice <i>escalar</i> o <i>mapear</i> un valor.`,
+ s:"crudo = leer(A0)\n",
+ chk:async r=>{
+   for(const v of [150,700]){const x=await r({an:{A0:v}});
+     if(x.err)return{ok:false,msg:""};
+     const last=[...x.out].reverse().find(o=>!isNaN(parseFloat(o)));
+     if(last===undefined)return{ok:false,msg:"No mostraste nada todavía."};
+     if(Math.abs(parseFloat(last)-pct(v))>1.5)
+       return{ok:false,msg:`Con el sensor en ${v} el porcentaje tendría que dar ${pct(v).toFixed(1)} y mostraste ${last}.`}}
+   return{ok:true,msg:"Convertiste el valor crudo a porcentaje."}}},
+
+{t:"Que decida solo",c:"if / else",
+ g:"Si la tierra está seca (menos de 30%), prendé el LED del pin 13. Si no, apagalo.",
+ th:`El <b>condicional</b> es la primera decisión que tu programa toma sin vos.<br>
+     <code>if porcentaje < 30:</code> y abajo, indentado, lo que pasa si es cierto.<br>
+     <code>else:</code> y abajo lo que pasa si no. Los dos puntos y la sangría no son adorno: marcan qué está adentro.`,
+ s:"crudo = leer(A0)\nporcentaje = crudo * 100 / 1023\n",
+ chk:async r=>{
+   const seco=await r({an:{A0:100}}); if(seco.err)return{ok:false,msg:""};
+   if(seco.pins[13]!==1)return{ok:false,msg:"Con la tierra seca (10%) el LED tendría que prenderse."};
+   const hum=await r({an:{A0:900}}); if(hum.err)return{ok:false,msg:""};
+   if(hum.pins[13]===1)return{ok:false,msg:"Con la tierra húmeda (88%) el LED tendría que estar apagado."};
+   return{ok:true,msg:"Tu programa decide solo según lo que mide."}}},
+
+{t:"Semáforo de la huerta",c:"elif",
+ g:"Tres casos. Menos de 30% → pin 4 (rojo). Entre 30 y 70 → pin 5 (amarillo). Más de 70 → pin 6 (verde). Solo uno prendido a la vez.",
+ th:`<code>elif</code> es "si no, probá con esto otro". Encadena decisiones: la placa prueba una por una y
+     se queda con la <b>primera</b> que sea cierta.<br>
+     Truco: apagá los tres al principio y después prendé el que corresponde.`,
+ s:"crudo = leer(A0)\nporcentaje = crudo * 100 / 1023\n",
+ chk:async r=>{
+   const casos=[[100,4],[500,5],[900,6]];
+   for(const [v,on] of casos){const x=await r({an:{A0:v}});
+     if(x.err)return{ok:false,msg:""};
+     for(const p of [4,5,6]){
+       const debe=p===on?1:0, es=x.pins[p]===1?1:0;
+       if(debe!==es)return{ok:false,msg:`Con el sensor al ${pct(v).toFixed(0)}% tendría que estar prendido solo el pin ${on}.`}}}
+   return{ok:true,msg:"Los tres casos funcionan. Ya podés programar cualquiera de los aparatos."}}}
+];
+
+/* ---------- pantallas del track ---------- */
+function roboHome(){
+  fichaBtn.style.display="none";
+  setHead("Explorando robótica","3° año · de la orden suelta al aparato que decide");
+  const rows=MIS.map((m,i)=>{
+    const done=RDONE.includes(i), lock=i>0&&!RDONE.includes(i-1)&&!done;
+    return `<div class="mrow ${done?"done":""} ${lock?"lock":""}" ${lock?"":`onclick="roboMis(${i})"`}>
+      <div class="mnum">${done?"✓":i+1}</div>
+      <div class="mt">${m.t}<div class="mc">${m.c}</div></div>
+      <div class="muted">${lock?"cerrada":"→"}</div></div>`}).join("");
+  app.innerHTML=`<div class="trackcard" onclick="introGo(0)" style="margin-bottom:16px">
+      <div class="tg">Empezá por acá</div>
+      <h3>Introducción a la robótica</h3>
+      <p>Qué es un robot, de dónde viene, cómo está hecho por dentro y algo de electricidad.
+         Con tres actividades para hacer en el momento.</p>
+    </div>
+    <div class="card">
+      <h2>Misiones de programación</h2>
+      <div class="mgrid">${rows}</div>
+      <button class="btn ghost" onclick="roboMis(-1)" style="margin-top:14px">Modo libre (probar sin consigna)</button>
+    </div>
+    <button class="btn ghost" onclick="portal()">← Volver al panel</button>`;
+}
+
+const INTRO=[
+ {t:"¿Qué es esto?",h:`Una <b>placa</b>. Es una computadora chiquita, sin pantalla y sin teclado.<br><br>
+   Tiene <b>entradas</b> (por donde le llega información del mundo: un sensor de humedad, de luz, de temperatura)
+   y <b>salidas</b> (por donde hace cosas: prender una luz, una alarma, una bomba de agua, un motor).<br><br>
+   No hace nada hasta que alguien le escribe un programa. Esos alguien van a ser ustedes.`},
+ {t:"¿Y por qué ahora?",h:`Durante todo el primer cuatrimestre aprendimos a mirar datos: armar una tabla,
+   hacerle preguntas, distinguir un dato de una opinión.<br><br>
+   Lo que nunca pudimos fue <b>conseguir datos propios</b>. Medir la huerta durante meses no nos daba el tiempo.<br><br>
+   Así que damos vuelta el problema: en vez de medir la huerta a mano, le vamos a <b>construir algo</b> que mida sola.`},
+ {t:"El aparato final",h:`Cada equipo va a construir uno distinto. Por ejemplo:<br><br>
+   <b>Un regador</b> que prende la bomba cuando la tierra está seca.<br>
+   <b>Una alarma de heladas</b> que suena si la temperatura baja demasiado.<br>
+   <b>Un semáforo de luz</b> que avisa si a los plantines les falta sol.<br>
+   <b>Una ventana automática</b> para el invernadero.<br><br>
+   Todos usan las mismas cinco ideas. Esas cinco ideas son las misiones.`},
+ {t:"La regla de la IA",h:`Van a usar inteligencia artificial para programar. Se espera que la usen: es lo que hace
+   cualquiera que programa hoy.<br><br>
+   Pero con una regla, y es la única regla del cuatrimestre:
+   <div class="airule"><b>No entra código que no puedas explicar.</b>
+   Si la IA te da algo y no sabés qué hace cada línea, le preguntás hasta entenderlo, o no lo usás.</div>
+   En cualquier momento voy a señalar tres líneas de tu programa y te voy a pedir que me las expliques.<br><br>
+   Y algo más, que van a descubrir solos: <b>la IA no tiene el aparato adelante.</b> Va a inventar cosas que
+   no funcionan. Cuando eso pase, avisen: es la clase más importante del año.`}
+];
+function roboIntro(i){
+  const s=INTRO[i];
+  setHead("Explorando robótica","introducción");
+  app.innerHTML=`<div class="card">
+    <div class="snum">${i+1} de ${INTRO.length}</div>
+    <h2>${s.t}</h2>
+    <div style="font-size:1.02rem;line-height:1.65">${s.h}</div>
+    <div class="runbar">
+      ${i>0?`<button class="btn ghost" onclick="roboIntro(${i-1})">← Anterior</button>`:""}
+      ${i<INTRO.length-1?`<button class="btn" onclick="roboIntro(${i+1})">Siguiente →</button>`
+        :`<button class="btn" onclick="roboMis(0)">Arrancar la misión 1 →</button>`}
+    </div>
+    <button class="btn ghost" onclick="roboHome()">Volver a las misiones</button>
+  </div>`;
+}
+
+let RM=-1;
+function roboMis(i){
+  RM=i; simReset(false);
+  const m=i>=0?MIS[i]:{t:"Modo libre",c:"probá lo que quieras",g:"Escribí lo que se te ocurra y ejecutá. Acá no hay consigna ni corrección.",th:"",s:"# probá lo que quieras\n"};
+  setHead(i>=0?`Misión ${i+1}`:"Modo libre",m.t);
+  const saved=localStorage.getItem(RKEY+"_code_"+i);
+  app.innerHTML=`<div class="card">
+    <div class="consigna"><div class="cl">${i>=0?"CONSIGNA":"LIBRE"} · ${m.c}</div><p>${m.g}</p></div>
+    ${m.th?`<details class="teoria" ${RDONE.includes(i)?"":"open"}><summary style="cursor:pointer;font-weight:700">Cómo funciona</summary>
+      <div style="margin-top:8px">${m.th}</div></details>`:""}
+    <textarea class="ed" id="ed" spellcheck="false" onkeydown="edKeys(event)">${saved!==null?saved:m.s}</textarea>
+    <div class="runbar">
+      <button class="btn" onclick="roboGo()">▶ Ejecutar</button>
+      <button class="btn ghost" onclick="roboStop()">■ Detener</button>
+      ${i>=0?`<button class="btn" onclick="roboCheck()" style="background:linear-gradient(90deg,var(--good),var(--accent))">Comprobar</button>`:""}
+    </div>
+    <div id="fb"></div>
+    ${boardHTML()}
+    <details class="teoria"><summary style="cursor:pointer;font-weight:700">Órdenes que entiende la placa</summary>
+      <div style="margin-top:8px;line-height:2">
+      <code>prender(13)</code> prende el pin ·
+      <code>apagar(13)</code> lo apaga ·
+      <code>esperar(1)</code> frena 1 segundo ·
+      <code>leer(A0)</code> devuelve lo que mide el sensor (0 a 1023) ·
+      <code>mostrar(x)</code> escribe en el monitor ·
+      <code>servo(9, 90)</code> mueve el servo a 90 grados<br>
+      Estructuras: <code>if / elif / else</code> · <code>while True:</code> · <code>for i in range(5):</code>
+      </div></details>
+    <button class="btn ghost" onclick="roboHome()">← Volver a las misiones</button>
+  </div>`;
+  roboPaint();
+}
+function boardHTML(){
+  return `<div class="board">
+    <div class="pins" id="pins"></div>
+    <div class="sensorbox">
+      <label style="margin-top:0">Sensor conectado en A0 — moveló para simular la tierra</label>
+      <input type="range" id="an" min="0" max="1023" value="${SIM.an.A0}" oninput="anMove(this.value)">
+      <div class="sread"><span>seco</span><span>crudo: <b id="anv">${SIM.an.A0}</b> &nbsp; = &nbsp; <b id="anp">${pct(SIM.an.A0).toFixed(0)}%</b></span><span>mojado</span></div>
+    </div>
+    <div class="monitor" id="mon"><span class="ph">El monitor muestra lo que escribas con mostrar( )</span></div>
+    <div class="vars" id="vars"></div>
+  </div>`;
+}
+function anMove(v){SIM.an.A0=+v;
+  const a=document.getElementById("anv"),b=document.getElementById("anp");
+  if(a)a.textContent=v; if(b)b.textContent=pct(+v).toFixed(0)+"%";}
+function roboPaint(){
+  const P=document.getElementById("pins");
+  if(P)P.innerHTML=LEDS.map(l=>`<div class="pin">
+      <div class="bulb ${SIM.pins[l.p]===1?"on":""}" style="color:${l.c}"></div>
+      <div class="pn">${l.p}</div><div class="pl">${l.l}</div></div>`).join("")+
+    (SIM.servo!==null?`<div class="pin"><div class="bulb on" style="color:#a78bfa;transform:rotate(${SIM.servo}deg)"></div>
+      <div class="pn">servo</div><div class="pl">${SIM.servo}°</div></div>`:"");
+  const M=document.getElementById("mon");
+  if(M)M.innerHTML=SIM.out.length?SIM.out.slice(-40).join("\n"):`<span class="ph">El monitor muestra lo que escribas con mostrar( )</span>`;
+  if(M)M.scrollTop=M.scrollHeight;
+  const V=document.getElementById("vars");
+  if(V)V.innerHTML=Object.keys(SIM.vars).map(k=>`<span class="vpill"><b>${k}</b> = ${
+    typeof SIM.vars[k]==="number"?Math.round(SIM.vars[k]*100)/100:SIM.vars[k]}</span>`).join("");
+}
+function edKeys(e){
+  const ta=e.target;
+  if(e.key==="Tab"){e.preventDefault();const s=ta.selectionStart;
+    ta.value=ta.value.slice(0,s)+"    "+ta.value.slice(ta.selectionEnd);ta.selectionStart=ta.selectionEnd=s+4;return}
+  if(e.key==="Enter"){e.preventDefault();
+    const s=ta.selectionStart,before=ta.value.slice(0,s);
+    const line=before.slice(before.lastIndexOf("\n")+1);
+    let ind=(line.match(/^[ \t]*/)||[""])[0];
+    if(/:\s*$/.test(line))ind+="    ";
+    const ins="\n"+ind;
+    ta.value=before+ins+ta.value.slice(ta.selectionEnd);
+    ta.selectionStart=ta.selectionEnd=s+ins.length;}
+}
+function edCode(){const e=document.getElementById("ed");if(e)localStorage.setItem(RKEY+"_code_"+RM,e.value);return e?e.value:""}
+function fb(html){const f=document.getElementById("fb");if(f)f.innerHTML=html}
+function errHTML(e){return `<div class="err"><b>${e.ln?`Línea ${e.ln}: `:""}</b>${e.msg}</div>`}
+
+async function roboGo(){
+  const code=edCode();
+  fb(`<div class="muted" style="margin-top:8px">Ejecutando… <span class="run-dots"></span></div>`);
+  const r=await roboRun(code,{live:true,keepAn:true});
+  fb(r.err?errHTML(r.err):"");
+}
+function roboStop(){RUN.stop=true}
+async function roboCheck(){
+  const code=edCode(), m=MIS[RM];
+  fb(`<div class="muted" style="margin-top:8px">Comprobando… <span class="run-dots"></span></div>`);
+  let firstErr=null;
+  const runner=async o=>{const r=await roboRun(code,Object.assign({live:false},o));if(r.err&&!firstErr)firstErr=r.err;return r};
+  let res;
+  try{res=await m.chk(runner)}catch(e){res={ok:false,msg:"No pude comprobarlo."}}
+  if(firstErr){fb(errHTML(firstErr));return}
+  if(res.ok){
+    if(!RDONE.includes(RM)){RDONE.push(RM);rsave()}
+    fb(`<div class="verdict ok">¡Listo! ${res.msg}</div>
+        ${RM+1<MIS.length?`<button class="btn" onclick="roboMis(${RM+1})">Siguiente misión →</button>`
+          :`<button class="btn" onclick="roboHome()">Terminaste las siete. Volver</button>`}`);
+  }else{
+    fb(`<div class="verdict no">Todavía no. ${res.msg}</div>`);
+  }
+  simReset(true);roboPaint();
+}
+
+/* =========================================================================
+   INTRODUCCIÓN A LA ROBÓTICA — clase 1 del track
+   Presentación lineal para proyectar + 3 actividades interactivas.
+   ========================================================================= */
+(function(){const s=document.createElement("style");s.textContent=`
+  .big{font-size:1.06rem;line-height:1.7}
+  .big b{color:#fff}
+  .kicker{font-size:.74rem;color:var(--warn);font-weight:800;letter-spacing:.6px;text-transform:uppercase}
+  .qlist{display:grid;gap:9px;margin-top:12px}
+  .qlist div{background:var(--card2);border-radius:12px;padding:13px 16px;font-size:1.05rem;font-weight:600}
+  .tl{position:relative;margin:14px 0 4px;padding-left:26px}
+  .tl:before{content:"";position:absolute;left:7px;top:6px;bottom:6px;width:2px;
+    background:linear-gradient(180deg,var(--accent),var(--b1),var(--b2))}
+  .tli{position:relative;margin-bottom:15px}
+  .tli:before{content:"";position:absolute;left:-23px;top:6px;width:10px;height:10px;border-radius:50%;
+    background:var(--accent);box-shadow:0 0 0 3px rgba(56,189,248,.18)}
+  .tli .y{font-family:ui-monospace,monospace;font-weight:800;color:var(--accent);font-size:.9rem}
+  .tli .d{font-size:.95rem;line-height:1.55;margin-top:2px}
+  .tli .d b{color:#fff}
+  .cur{background:var(--card2);border-radius:12px;padding:13px 15px;margin-bottom:9px;font-size:.95rem;line-height:1.55}
+  .cur b{color:var(--warn)}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  @media(max-width:560px){.two{grid-template-columns:1fr}}
+  .box{background:var(--card2);border-radius:14px;padding:15px}
+  .box h4{margin:0 0 8px;font-size:1rem}
+  .box ul{margin:0;padding-left:18px;font-size:.9rem;line-height:1.7}
+  .flow{display:flex;align-items:stretch;gap:8px;margin:14px 0;flex-wrap:wrap}
+  .fnode{flex:1;min-width:120px;background:#0b1220;border:2px solid #334155;border-radius:14px;padding:14px;text-align:center}
+  .fnode .fh{font-weight:800;font-size:.95rem}
+  .fnode .fs{font-size:.78rem;color:var(--muted);margin-top:4px;line-height:1.45}
+  .fnode.i{border-color:var(--good)}.fnode.p{border-color:var(--accent)}.fnode.o{border-color:var(--b2)}
+  .farr{align-self:center;color:var(--muted);font-size:1.3rem;font-weight:800}
+  .water{display:grid;grid-template-columns:auto 1fr 1fr;gap:8px 14px;font-size:.92rem;align-items:center;margin-top:10px}
+  .water .hd{font-weight:800;color:var(--warn);font-size:.78rem;text-transform:uppercase;letter-spacing:.4px}
+  .water .cc{background:var(--card2);border-radius:9px;padding:9px 12px}
+  .plc{display:grid;gap:10px;margin-top:10px}
+  .plc .p1{background:var(--card2);border-radius:13px;padding:14px;border-left:4px solid var(--accent)}
+  .plc .p1 .pn2{font-weight:800}
+  .plc .p1 .pd{font-size:.88rem;color:var(--muted);margin-top:4px;line-height:1.5}
+  .plc .p1 .tags{margin-top:7px}
+  .navb{display:flex;gap:8px;margin-top:18px;align-items:center}
+  .navb .btn{margin-top:0;width:auto;flex:1}
+  .prog{height:4px;background:#1e293b;border-radius:99px;overflow:hidden;margin-bottom:14px}
+  .prog i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),var(--b2));transition:.25s}
+  .achoice{display:grid;gap:9px;margin-top:12px}
+  .achoice button{background:var(--card2);color:var(--txt);border:2px solid transparent;border-radius:12px;
+    padding:13px 15px;font-size:1rem;text-align:left;cursor:pointer;font-family:inherit;transition:.15s}
+  .achoice button:hover{border-color:var(--accent)}
+  .achoice button.ok{border-color:var(--good);background:rgba(52,211,153,.13)}
+  .achoice button.no{border-color:var(--bad);background:rgba(248,113,113,.11)}
+  .expl{background:#0b1220;border-left:3px solid var(--accent);border-radius:9px;padding:11px 14px;margin-top:11px;
+    font-size:.92rem;line-height:1.6}
+  .score{font-family:ui-monospace,monospace;color:var(--muted);font-size:.85rem}
+`;document.head.appendChild(s)})();
+
+/* ---------------- contenido de la presentación ---------------- */
+const IST=[
+{t:"Explorando robótica",k:"Arranca el segundo cuatrimestre",h:`
+  <div class="big">Durante cinco meses aprendimos a <b>mirar datos</b>: armar una tabla, hacerle preguntas,
+  distinguir un dato de una opinión.<br><br>
+  Hoy empezamos otra cosa. Vamos a <b>construir un aparato</b>.<br><br>
+  Uno que mida algo del mundo real, decida solo qué hacer, y lo haga. Programado por ustedes.</div>
+  <div class="hint" style="margin-top:16px">Al final del cuatrimestre eso tiene que estar funcionando
+  arriba de una mesa en el Paseo Don Jaime.</div>`},
+
+{t:"Antes que nada",k:"Preguntas para pensar",h:`
+  <div class="big">No contesten rápido. Piensen y discutan.</div>
+  <div class="qlist">
+    <div>¿Un lavarropas es un robot?</div>
+    <div>¿Y un semáforo?</div>
+    <div>¿Y un ascensor?</div>
+    <div>¿Y ChatGPT?</div>
+    <div>¿Y una puerta que se abre sola en el súper?</div>
+  </div>
+  <div class="hint" style="margin-top:14px">Si hay desacuerdo, mejor. Guarden el argumento.</div>`},
+
+{act:1,t:"Actividad 1",k:"¿Es un robot?"},
+
+{t:"Qué es un robot",k:"Definición",h:`
+  <div class="big">Casi todas las definiciones coinciden en tres cosas. Un robot es una máquina que:</div>
+  <div class="flow">
+    <div class="fnode i"><div class="fh">SENSA</div><div class="fs">recibe información del mundo</div></div>
+    <div class="farr">→</div>
+    <div class="fnode p"><div class="fh">DECIDE</div><div class="fs">procesa esa información y elige qué hacer</div></div>
+    <div class="farr">→</div>
+    <div class="fnode o"><div class="fh">ACTÚA</div><div class="fs">hace algo que cambia el mundo</div></div>
+  </div>
+  <div class="big">Y lo repite en un <b>bucle</b>, todo el tiempo.<br><br>
+  Si le sacás el "decide", no es un robot: es un <b>automatismo</b>. Una puerta corrediza sensa y actúa,
+  pero no elige nada, siempre hace lo mismo.<br><br>
+  Fíjense que esas tres palabras no dicen nada de que tenga forma humana, ni patas, ni que hable.
+  <b>Eso lo puso el cine, no la ingeniería.</b></div>`},
+
+{t:"De dónde viene todo esto",k:"Línea histórica",h:`
+  <div class="tl">
+   <div class="tli"><div class="y">~350 a.C.</div><div class="d"><b>La paloma de Arquitas.</b> Un pájaro de madera
+     que volaba impulsado por vapor. El primer autómata del que hay registro.</div></div>
+   <div class="tli"><div class="y">Siglo I</div><div class="d"><b>Herón de Alejandría</b> diseña puertas de templo
+     que se abrían solas y máquinas que servían vino. Todo con agua, aire y contrapesos.</div></div>
+   <div class="tli"><div class="y">1206</div><div class="d"><b>Al-Jazari</b>, ingeniero árabe, construye autómatas
+     que se podían <b>reprogramar</b> cambiando clavijas. Un barco con músicos que tocaban distintos ritmos.
+     Es la idea de programa, seiscientos años antes de la computadora.</div></div>
+   <div class="tli"><div class="y">1739</div><div class="d"><b>El pato de Vaucanson.</b> Un pato mecánico que comía,
+     movía las alas y hacía caca. Fue un fraude parcial, pero enloqueció a toda Europa.</div></div>
+   <div class="tli"><div class="y">1804</div><div class="d"><b>El telar de Jacquard.</b> Tejía dibujos distintos según
+     unas <b>tarjetas perforadas</b>. La misma máquina, distinto resultado, según las instrucciones que le pongas.
+     Esto es literalmente software antes del software.</div></div>
+   <div class="tli"><div class="y">1898</div><div class="d"><b>Tesla</b> muestra un barquito por radiocontrol en Nueva York.
+     La gente creyó que había magia adentro.</div></div>
+   <div class="tli"><div class="y">1920</div><div class="d"><b>Nace la palabra "robot"</b>, en una obra de teatro del
+     checo Karel Čapek. Viene de <i>robota</i>: trabajo forzado. En la obra, los robots se rebelan.
+     La palabra nació con miedo adentro.</div></div>
+   <div class="tli"><div class="y">1942</div><div class="d"><b>Asimov</b> escribe las tres leyes de la robótica.
+     No son leyes reales, son literatura, pero todavía se discuten.</div></div>
+   <div class="tli"><div class="y">1961</div><div class="d"><b>Unimate</b>, el primer robot industrial, empieza a
+     trabajar en una fábrica de General Motors levantando piezas de metal calientes. El trabajo que quemaba a la gente.</div></div>
+   <div class="tli"><div class="y">1969</div><div class="d"><b>Shakey.</b> El primer robot que no solo se movía:
+     armaba un plan de qué hacer. Tardaba horas en decidir cómo cruzar una habitación.</div></div>
+   <div class="tli"><div class="y">2002</div><div class="d"><b>Roomba.</b> El primer robot que entró de verdad
+     a las casas. Se vendieron millones.</div></div>
+   <div class="tli"><div class="y">2005</div><div class="d"><b>Arduino</b>, en Ivrea, Italia. Una placa barata y
+     <b>de hardware libre</b>: los planos son públicos, cualquiera puede fabricarla o modificarla.
+     Antes de Arduino, esto era para ingenieros. Después, para cualquiera. <b>Es la placa que vamos a usar.</b></div></div>
+   <div class="tli"><div class="y">Hoy</div><div class="d">Drones que fumigan campos, robots que ordeñan vacas,
+     brazos que operan personas, y la discusión de siempre: qué trabajos reemplaza y quién se queda con la ganancia.</div></div>
+  </div>`},
+
+{t:"Curiosidades",k:"Para saber",h:`
+  <div class="cur"><b>Robot</b> viene de <i>robota</i>, que en checo significa <b>trabajo forzado</b>, casi esclavitud.
+    La palabra nació en 1920 en una obra de teatro donde los robots terminan rebelándose.</div>
+  <div class="cur"><b>Arduino se llama así por un bar.</b> El Bar di Re Arduino, en Ivrea, donde se juntaban los que
+    la inventaron. Y el bar se llamaba así por Arduino de Ivrea, un rey medieval.</div>
+  <div class="cur"><b>La Roomba viene de la guerra.</b> La empresa que la hizo desarrollaba robots para
+    desactivar minas antipersonales.</div>
+  <div class="cur"><b>El celular que tienen en el bolsillo</b> tiene más sensores que muchos robots industriales:
+    acelerómetro, giróscopo, luz, proximidad, magnetómetro, GPS, micrófono, cámaras.</div>
+  <div class="cur"><b>Casi ningún robot real tiene forma humana.</b> La mayoría son brazos atornillados al piso.
+    Darle forma de persona a una máquina casi siempre es una mala decisión de ingeniería.</div>`},
+
+{t:"Hardware y software",k:"La distinción que ordena todo",h:`
+  <div class="two">
+    <div class="box"><h4>Hardware</h4><ul>
+      <li>Lo que se puede tocar</li><li>La placa, los cables, el sensor</li>
+      <li>El motor, la lamparita, la batería</li><li>Si se rompe, se cambia</li></ul></div>
+    <div class="box"><h4>Software</h4><ul>
+      <li>Las instrucciones</li><li>No pesa, no se toca</li>
+      <li>Se copia infinitas veces sin gastarse</li><li>Si está mal, se corrige y listo</li></ul></div>
+  </div>
+  <div class="big"><b>Y acá está la idea importante del día:</b><br><br>
+  El mismo hardware, con distinto software, <b>es un aparato distinto</b>.<br><br>
+  La misma placa con los mismos cables puede ser un regador automático o una alarma de heladas.
+  No cambia nada físico. Cambia el programa.<br><br>
+  Por eso el telar de Jacquard de 1804 ya era importante: era la misma máquina tejiendo dibujos distintos
+  según las tarjetas que le pusieras.</div>`},
+
+{act:2,t:"Actividad 2",k:"¿Hardware o software?"},
+
+{t:"Cómo está hecho por dentro",k:"Los tres bloques",h:`
+  <div class="big">Cualquier sistema robótico, desde el más simple hasta un auto autónomo, tiene estas partes:</div>
+  <div class="flow">
+    <div class="fnode i"><div class="fh">ENTRADA</div><div class="fs">SENSORES<br>miden algo del mundo</div></div>
+    <div class="farr">→</div>
+    <div class="fnode p"><div class="fh">PROCESAMIENTO</div><div class="fs">MICROCONTROLADOR<br>corre tu programa y decide</div></div>
+    <div class="farr">→</div>
+    <div class="fnode o"><div class="fh">SALIDA</div><div class="fs">ACTUADORES<br>hacen algo en el mundo</div></div>
+  </div>
+  <div class="big">Más una cuarta que se olvida siempre y sin la cual nada funciona: la <b>alimentación</b>.
+  De algún lado tiene que salir la energía. Un cable USB, una pila, un powerbank.</div>
+  <div class="hint">Si esto les suena, es porque es lo mismo que vimos con los datos:
+  entra información, se procesa, sale un resultado. Es el mismo esquema.</div>`},
+
+{t:"Sensores",k:"Los sentidos de la máquina",h:`
+  <div class="big">Un <b>sensor</b> convierte algo del mundo físico en un número que la placa puede leer.
+  Eso es todo lo que hace. Traduce.</div>
+  <div class="two" style="margin-top:14px">
+    <div class="box"><h4>Los que vamos a usar</h4><ul>
+      <li><b>Humedad de suelo:</b> cuánta agua tiene la tierra</li>
+      <li><b>Temperatura y humedad del aire</b></li>
+      <li><b>Luz (LDR):</b> cuánta claridad hay</li>
+      <li><b>Botón:</b> apretado o no apretado</li></ul></div>
+    <div class="box"><h4>Otros que existen</h4><ul>
+      <li>Distancia por ultrasonido</li><li>Movimiento</li><li>Inclinación y aceleración</li>
+      <li>Gases, humo, calidad del aire</li><li>Sonido</li></ul></div>
+  </div>
+  <div class="big" style="margin-top:14px">Un sensor <b>no entiende</b> lo que mide. El sensor de humedad no sabe
+  qué es la tierra ni qué es una planta. Devuelve un número. <b>El significado se lo ponemos nosotros en el programa.</b></div>`},
+
+{t:"Actuadores",k:"Cómo la máquina toca el mundo",h:`
+  <div class="big">Un <b>actuador</b> es lo contrario del sensor: convierte una orden eléctrica en algo que pasa.</div>
+  <div class="two" style="margin-top:14px">
+    <div class="box"><h4>Simples</h4><ul>
+      <li><b>LED:</b> una lucecita. Sirve para avisar</li>
+      <li><b>Buzzer:</b> hace ruido. Alarma</li>
+      <li><b>Display:</b> muestra un número o texto</li></ul></div>
+    <div class="box"><h4>Con fuerza</h4><ul>
+      <li><b>Servo:</b> gira a un ángulo exacto. Abrir una ventanita</li>
+      <li><b>Motor:</b> gira y gira. Ruedas</li>
+      <li><b>Relé:</b> un interruptor que la placa maneja. Con esto se prende una bomba de agua de verdad</li></ul></div>
+  </div>
+  <div class="hint">El relé es la pieza clave del regador: la placa maneja 5 voltios, la bomba necesita mucho más.
+  El relé es el intermediario.</div>`},
+
+{t:"Un poco de electricidad",k:"Lo mínimo para no quemar nada",h:`
+  <div class="big">La electricidad es difícil de imaginar porque no se ve. La analogía del agua funciona bastante bien:</div>
+  <div class="water">
+    <div class="hd">Concepto</div><div class="hd">En el agua</div><div class="hd">En electricidad</div>
+    <div class="cc"><b>Tensión</b><br><span class="muted">voltios (V)</span></div>
+    <div class="cc">La presión del agua</div><div class="cc">Cuánto empuja. 5 V, 3,3 V, 220 V</div>
+    <div class="cc"><b>Corriente</b><br><span class="muted">amperes (A)</span></div>
+    <div class="cc">Cuánta agua pasa por segundo</div><div class="cc">Cuántos electrones pasan. Esto es lo que quema cosas</div>
+    <div class="cc"><b>Resistencia</b><br><span class="muted">ohms (Ω)</span></div>
+    <div class="cc">Lo angosto del caño</div><div class="cc">Cuánto se le opone al paso</div>
+  </div>
+  <div class="big" style="margin-top:16px"><b>Tres reglas que alcanzan por ahora:</b><br><br>
+  <b>1. El circuito tiene que cerrarse.</b> La corriente sale, hace su trabajo y tiene que volver.
+  Si el camino está abierto, no pasa absolutamente nada. Por eso siempre hay un cable a GND (tierra).<br><br>
+  <b>2. Un LED necesita una resistencia.</b> Solo, se toma toda la corriente que puede y se quema en segundos.
+  La resistencia es el caño angosto que lo cuida.<br><br>
+  <b>3. Cada placa trabaja a su voltaje.</b> El Arduino a 5 V. Otras a 3,3 V.
+  Si le metés 5 V a una placa de 3,3 V, la rompés. Por eso vamos a usar Arduino: nuestros sensores son de 5 V.</div>`},
+
+{t:"Digital y analógico",k:"Dos maneras de leer el mundo",h:`
+  <div class="two">
+    <div class="box"><h4>Digital</h4>
+      <div class="big" style="font-size:.95rem">Solo dos estados posibles: <b>0 o 1</b>. Apagado o prendido.
+      Sí o no.<br><br>Un botón es digital: está apretado o no está apretado. No hay medio apretado.</div></div>
+    <div class="box"><h4>Analógico</h4>
+      <div class="big" style="font-size:.95rem">Un valor dentro de un rango.
+      En Arduino, un número entre <b>0 y 1023</b>.<br><br>La humedad de la tierra es analógica:
+      puede estar seca, un poco húmeda, empapada, y todo lo que hay en el medio.</div></div>
+  </div>
+  <div class="big" style="margin-top:14px">Ese número entre 0 y 1023 va a ser importante.
+  Cuando lean el sensor de humedad no van a recibir "húmedo", van a recibir <b>743</b>.<br><br>
+  Y ahí va a haber que convertirlo a algo que se entienda, por ejemplo un porcentaje.
+  <b>Esa conversión es una función lineal</b>, la misma que están viendo en Matemática.</div>`},
+
+{t:"Ejemplos de placas",k:"El zoológico",h:`
+  <div class="plc">
+    <div class="p1"><div class="pn2">Arduino Uno / Nano</div>
+      <div class="pd">La clásica. Trabaja a 5 V, es hardware libre, es barata y hay tutoriales de todo.
+      No tiene internet ni pantalla: hace una sola cosa y la hace siempre.</div>
+      <div class="tags"><span class="pill">5 V</span><span class="pill">hardware libre</span><span class="pill">la que vamos a usar</span></div></div>
+    <div class="p1"><div class="pn2">ESP32</div>
+      <div class="pd">Parecida pero con WiFi y Bluetooth integrados. Puede mandar los datos a internet.
+      Trabaja a 3,3 V.</div>
+      <div class="tags"><span class="pill">3,3 V</span><span class="pill">WiFi</span></div></div>
+    <div class="p1"><div class="pn2">Raspberry Pi Pico</div>
+      <div class="pd">Se programa en MicroPython, una versión reducida de Python. Muy barata.</div>
+      <div class="tags"><span class="pill">3,3 V</span><span class="pill">Python</span></div></div>
+    <div class="p1"><div class="pn2">Raspberry Pi (la grande)</div>
+      <div class="pd"><b>Esta no es un microcontrolador, es una computadora completa.</b> Tiene sistema operativo,
+      se le enchufa monitor y teclado, corre un navegador. Es otra categoría.</div>
+      <div class="tags"><span class="pill">computadora</span></div></div>
+  </div>
+  <div class="hint"><b>Microcontrolador vs computadora:</b> el microcontrolador corre un solo programa, para siempre,
+  desde que se enciende. No tiene sistema operativo ni escritorio. Es más limitado y por eso es más confiable:
+  no se le cuelga nada.</div>`},
+
+{act:3,t:"Actividad 3",k:"Armá el sistema"},
+
+{t:"De dónde venimos y a dónde vamos",k:"El hilo del año",h:`
+  <div class="big">
+  <b>Lo que hicimos de marzo a julio:</b> aprendimos a estructurar datos en tablas, a distinguir tipos de datos,
+  a hacerle preguntas a un conjunto de datos y a no confundir lo que se observa con lo que se interpreta.<br><br>
+  <b>El problema que tuvimos:</b> nunca pudimos conseguir datos propios. Medir la huerta durante meses,
+  a mano, una vez por semana, no daba.<br><br>
+  <b>La vuelta que damos hoy:</b> en vez de medir la huerta, le construimos algo que mida sola.
+  Todo lo que aprendimos sobre datos sigue sirviendo. Lo que faltaba era la fuente.</div>
+  <div class="flow" style="margin-top:18px">
+    <div class="fnode i"><div class="fh">Agosto</div><div class="fs">aprender a programar la placa, misión por misión</div></div>
+    <div class="farr">→</div>
+    <div class="fnode p"><div class="fh">Septiembre</div><div class="fs">cada equipo diseña y arma su aparato</div></div>
+    <div class="farr">→</div>
+    <div class="fnode o"><div class="fh">Octubre</div><div class="fs">funcionando en el Paseo Don Jaime</div></div>
+  </div>`},
+
+{t:"La única regla del cuatrimestre",k:"Sobre la IA",h:`
+  <div class="big">Van a usar inteligencia artificial para programar. <b>Se espera que la usen.</b>
+  Es lo que hace cualquiera que programa hoy y sería absurdo prohibirlo.<br><br>
+  Pero hay una regla, y es la única:</div>
+  <div class="airule"><b>No entra código que no puedas explicar.</b>
+    Si la IA te da algo y no sabés qué hace cada línea, le preguntás hasta entenderlo, o no lo usás.</div>
+  <div class="big">En cualquier momento voy a señalar tres líneas de tu programa y te voy a pedir que me las expliques.
+  Eso es la evaluación. No hay que estudiar nada para eso: o entendés lo que escribiste o no.<br><br>
+  Y hay algo que van a descubrir solos, en unas semanas:
+  <b>la IA no tiene el aparato adelante.</b> No sabe qué cable enchufaste ni en qué pin.
+  Va a inventar código que parece perfecto y no funciona.<br><br>
+  Cuando les pase, avisen. Esa va a ser la clase más importante del año.</div>`},
+
+{t:"Para cerrar",k:"Bitácora",h:`
+  <div class="big">Cinco minutos, cada uno en su carpeta:</div>
+  <div class="qlist">
+    <div>Una cosa que me sorprendió hoy</div>
+    <div>Algo que creía y resultó que no era así</div>
+    <div>Qué aparato me gustaría construir para la huerta</div>
+    <div>Una duda que me quedó</div>
+  </div>
+  <div class="hint" style="margin-top:14px">La próxima clase arrancamos con las misiones de programación.
+  La primera es prender una luz.</div>`}
+];
+
+function introGo(i){
+  fichaBtn.style.display="none";
+  if(i<0)i=0; if(i>=IST.length)return roboHome();
+  const s=IST[i];
+  setHead("Introducción a la robótica",`${i+1} de ${IST.length}`);
+  if(s.act)return [null,act1,act2,act3][s.act](i);
+  app.innerHTML=`<div class="card">
+    <div class="prog"><i style="width:${(i+1)/IST.length*100}%"></i></div>
+    <div class="kicker">${s.k}</div>
+    <h2 style="font-size:1.45rem;margin-top:4px">${s.t}</h2>
+    ${s.h}
+    ${introNav(i)}
+  </div>
+  <button class="btn ghost" onclick="roboHome()">Salir de la introducción</button>`;
+  window.scrollTo(0,0);
+}
+function introNav(i){return `<div class="navb">
+  ${i>0?`<button class="btn ghost" onclick="introGo(${i-1})">← Anterior</button>`:""}
+  <button class="btn" onclick="introGo(${i+1})">${i+1>=IST.length?"Terminar":"Siguiente →"}</button></div>`}
+
+/* ---------------- ACTIVIDAD 1: ¿Es un robot? ---------------- */
+const A1=[
+ {q:"Un lavarropas",r:true,e:"Sí, aunque no lo parezca. Sensa (cuánta agua hay, cuánto pesa la ropa), decide (elige el programa, si carga más agua) y actúa (gira, calienta, desagota). Cumple los tres pasos."},
+ {q:"Un semáforo común",r:false,e:"No. Actúa (cambia las luces) pero no sensa nada ni decide: repite la misma secuencia por tiempo, pase lo que pase. Es un automatismo. Ojo: un semáforo inteligente que mide el tránsito y se adapta, sí sería un robot."},
+ {q:"Un dron que sigue una ruta y esquiva árboles",r:true,e:"Sí, clarísimo. Sensa (GPS, cámaras, distancia), decide (recalcula la ruta) y actúa (cambia el rumbo)."},
+ {q:"ChatGPT",r:false,e:"No, aunque sea muy sofisticado. Le falta el cuerpo: no sensa el mundo físico ni actúa sobre él. Es un programa, no un robot. Un robot necesita estar metido en el mundo."},
+ {q:"Una puerta corrediza de supermercado",r:false,e:"No. Sensa (detecta que te acercás) y actúa (abre), pero no decide nada: siempre hace exactamente lo mismo. Le falta el paso del medio."},
+ {q:"Una Roomba",r:true,e:"Sí. Sensa (choques, suciedad, escalones), decide (arma el recorrido, vuelve a cargar) y actúa (se mueve y aspira)."},
+ {q:"Un reloj despertador",r:false,e:"No. Mide el tiempo y suena a la hora fijada. No hay decisión, hay una condición programada de fábrica que siempre es la misma."},
+ {q:"El aparato que vamos a construir",r:true,e:"Sí, y es la gracia. Va a sensar la humedad de la tierra, decidir según lo que ustedes programen, y actuar prendiendo algo. Los tres pasos, hechos por ustedes."}
+];
+let A1i=0,A1s=0,A1step=null;
+function act1(idx){
+  A1i=0;A1s=0;A1step=idx;a1r();
+}
+function a1r(fbk){
+  const it=A1[A1i];
+  setHead("Actividad 1","¿Es un robot?");
+  app.innerHTML=`<div class="card">
+    <div class="prog"><i style="width:${(A1i+(fbk?1:0))/A1.length*100}%"></i></div>
+    <div class="kicker">Actividad 1 · ¿es un robot? · <span class="score">${A1i} de ${A1.length}</span></div>
+    <h2 style="font-size:1.35rem;margin-top:4px">${it.q}</h2>
+    <p class="muted">Acordate: tiene que <b>sensar</b>, <b>decidir</b> y <b>actuar</b>. Los tres.</p>
+    <div class="achoice">
+      <button ${fbk?"":`onclick="a1a(true)"`} class="${fbk?(it.r?"ok":(fbk.pick===true?"no":"")):""}">Sí, es un robot</button>
+      <button ${fbk?"":`onclick="a1a(false)"`} class="${fbk?(!it.r?"ok":(fbk.pick===false?"no":"")):""}">No, no lo es</button>
+    </div>
+    ${fbk?`<div class="expl"><b>${fbk.ok?"Bien. ":"Casi. "}</b>${it.e}</div>
+      <div class="navb"><button class="btn" onclick="a1n()">${A1i+1>=A1.length?"Ver el resultado →":"Siguiente →"}</button></div>`:""}
+  </div>`;
+  window.scrollTo(0,0);
+}
+function a1a(p){const ok=p===A1[A1i].r;if(ok)A1s++;a1r({ok,pick:p})}
+function a1n(){A1i++;
+  if(A1i>=A1.length){
+    setHead("Actividad 1","resultado");
+    app.innerHTML=`<div class="card">
+      <div class="kicker">Actividad 1 terminada</div>
+      <h2>${A1s} de ${A1.length}</h2>
+      <div class="big">Lo importante no es el puntaje. Es que la palabra "robot" es más borrosa de lo que parece,
+      y que el filtro que sirve es el del medio: <b>¿decide algo, o siempre hace lo mismo?</b><br><br>
+      La mayoría de las máquinas que nos rodean sensan y actúan. Muy pocas deciden.</div>
+      ${introNav(A1step)}</div>`;
+    return}
+  a1r();
+}
+
+/* ---------------- ACTIVIDAD 2: hardware o software ---------------- */
+const A2=[
+ {q:"El cable USB",r:"h",e:"Hardware. Se toca, se rompe, se reemplaza."},
+ {q:"La orden prender(13)",r:"s",e:"Software. Es una instrucción. No pesa nada y se puede copiar infinitas veces."},
+ {q:"El sensor de humedad",r:"h",e:"Hardware. Es un objeto físico que se mete en la tierra."},
+ {q:"La regla 'si está seco, regá'",r:"s",e:"Software. Es una decisión escrita, no una cosa. La podés cambiar sin tocar un cable."},
+ {q:"La placa Arduino",r:"h",e:"Hardware. Es la plaquita verde con los pines."},
+ {q:"Un archivo de música",r:"s",e:"Software, en sentido amplio: son datos. No ocupa lugar físico. El parlante que lo reproduce sí es hardware."},
+ {q:"Los planos de la placa Arduino",r:"s",e:"Acá se pone interesante. Los planos son información, no son la placa. Y como Arduino es hardware LIBRE, esos planos son públicos: cualquiera puede fabricarse una."},
+ {q:"El motor que abre la ventana",r:"h",e:"Hardware. Tiene fuerza, hace ruido, se calienta."}
+];
+let A2i=0,A2s=0,A2step=null;
+function act2(idx){A2i=0;A2s=0;A2step=idx;a2r()}
+function a2r(fbk){
+  const it=A2[A2i];
+  setHead("Actividad 2","¿Hardware o software?");
+  app.innerHTML=`<div class="card">
+    <div class="prog"><i style="width:${(A2i+(fbk?1:0))/A2.length*100}%"></i></div>
+    <div class="kicker">Actividad 2 · <span class="score">${A2i} de ${A2.length}</span></div>
+    <h2 style="font-size:1.35rem;margin-top:4px">${it.q}</h2>
+    <div class="achoice">
+      <button ${fbk?"":`onclick="a2a('h')"`} class="${fbk?(it.r==="h"?"ok":(fbk.pick==="h"?"no":"")):""}">Hardware — se toca</button>
+      <button ${fbk?"":`onclick="a2a('s')"`} class="${fbk?(it.r==="s"?"ok":(fbk.pick==="s"?"no":"")):""}">Software — son instrucciones</button>
+    </div>
+    ${fbk?`<div class="expl"><b>${fbk.ok?"Bien. ":"Casi. "}</b>${it.e}</div>
+      <div class="navb"><button class="btn" onclick="a2n()">${A2i+1>=A2.length?"Ver el resultado →":"Siguiente →"}</button></div>`:""}
+  </div>`;
+  window.scrollTo(0,0);
+}
+function a2a(p){const ok=p===A2[A2i].r;if(ok)A2s++;a2r({ok,pick:p})}
+function a2n(){A2i++;
+  if(A2i>=A2.length){
+    setHead("Actividad 2","resultado");
+    app.innerHTML=`<div class="card"><div class="kicker">Actividad 2 terminada</div>
+      <h2>${A2s} de ${A2.length}</h2>
+      <div class="big">La frontera no siempre es obvia, y el caso de los planos de Arduino es el más interesante:
+      <b>información sobre cómo hacer hardware, distribuida libremente.</b> Eso es lo que hizo que estas placas
+      costaran diez mil pesos en vez de cien mil.<br><br>
+      Y no se olviden de lo central: <b>mismo hardware + distinto software = otro aparato.</b></div>
+      ${introNav(A2step)}</div>`;
+    return}
+  a2r();
+}
+
+/* ---------------- ACTIVIDAD 3: armá el sistema ---------------- */
+const A3=[
+ {p:"La huerta se seca los fines de semana porque no hay nadie que riegue.",
+  sens:["Sensor de humedad de suelo","Sensor de luz","Sensor de distancia"],si:0,
+  act:["Relé con una bomba de agua","Un buzzer","Un display"],ai:0,
+  rule:["Si la humedad es menor a 30%, prender la bomba","Si hay luz, prender la bomba","Cada 5 minutos, prender la bomba"],ri:0,
+  e:"Sensor de humedad, bomba por relé, y la regla mira el valor del sensor. La tercera opción (cada 5 minutos) es un automatismo, no un robot: riega igual aunque esté lloviendo."},
+ {p:"En primavera hay heladas de madrugada y arruinan los plantines. Alguien tendría que enterarse.",
+  sens:["Sensor de temperatura","Sensor de humedad de suelo","Botón"],si:0,
+  act:["Un buzzer y un LED","Un motor","Una bomba"],ai:0,
+  rule:["Si la temperatura es menor a 2 grados, sonar la alarma","Si es de noche, sonar la alarma","Si la tierra está seca, sonar la alarma"],ri:0,
+  e:"El sensor tiene que medir justo lo que te preocupa. Que sea de noche no significa que haya helada: es una pista, no el dato."},
+ {p:"Los plantines del rincón no crecen. Sospechamos que les falta sol pero no estamos seguros.",
+  sens:["Sensor de luz (LDR)","Sensor de temperatura","Sensor de distancia"],si:0,
+  act:["Tres LEDs: rojo, amarillo y verde","Una bomba","Un servo"],ai:0,
+  rule:["Menos de 30%: rojo. Entre 30 y 70: amarillo. Más de 70: verde","Si hay luz, prender los tres","Prender el verde siempre"],ri:0,
+  e:"Acá el aparato no arregla nada: informa. Muchas veces eso es lo más útil. Y fíjense que la regla tiene tres casos, no dos."},
+ {p:"El invernadero se recalienta al mediodía y hay que abrir la ventanita a mano.",
+  sens:["Sensor de temperatura","Sensor de luz","Sensor de humedad de suelo"],si:0,
+  act:["Un servo","Un LED","Un buzzer"],ai:0,
+  rule:["Si la temperatura pasa los 30 grados, abrir la ventana","Si es mediodía, abrir la ventana","Si hay luz, abrir la ventana"],ri:0,
+  e:"El servo es el actuador que mueve algo a una posición exacta. Y de nuevo: medí la causa (el calor), no algo que suele venir con ella (la hora)."}
+];
+let A3i=0,A3p={},A3step=null;
+function act3(idx){A3i=0;A3p={};A3step=idx;a3r()}
+function a3r(show){
+  const it=A3[A3i];
+  setHead("Actividad 3","Armá el sistema");
+  const grp=(name,arr,correct,key)=>`
+    <div class="kicker" style="margin-top:16px">${name}</div>
+    <div class="achoice">${arr.map((o,k)=>`
+      <button ${show?"":`onclick="a3pick('${key}',${k})"`}
+        class="${show?(k===correct?"ok":(A3p[key]===k?"no":"")):(A3p[key]===k?"ok":"")}">${o}</button>`).join("")}</div>`;
+  const ready=A3p.s!==undefined&&A3p.a!==undefined&&A3p.r!==undefined;
+  app.innerHTML=`<div class="card">
+    <div class="prog"><i style="width:${(A3i+(show?1:0))/A3.length*100}%"></i></div>
+    <div class="kicker">Actividad 3 · caso ${A3i+1} de ${A3.length}</div>
+    <div class="consigna" style="margin-top:8px"><div class="cl">EL PROBLEMA</div><p>${it.p}</p></div>
+    <p class="muted">Elegí las tres piezas del sistema: qué mide, qué hace, y con qué regla decide.</p>
+    ${grp("1 · ¿Qué sensor?",it.sens,it.si,"s")}
+    ${grp("2 · ¿Qué actuador?",it.act,it.ai,"a")}
+    ${grp("3 · ¿Qué regla?",it.rule,it.ri,"r")}
+    ${show?`<div class="expl"><b>${show.ok?"Bien pensado. ":"Ojo con esto. "}</b>${it.e}</div>
+      <div class="navb"><button class="btn" onclick="a3n()">${A3i+1>=A3.length?"Terminar →":"Siguiente caso →"}</button></div>`
+     :`<div class="navb"><button class="btn" ${ready?"":'disabled style="opacity:.4"'} onclick="a3ok()">Comprobar</button></div>`}
+  </div>`;
+  window.scrollTo(0,0);
+}
+function a3pick(k,v){A3p[k]=v;a3r()}
+function a3ok(){const it=A3[A3i];
+  const ok=A3p.s===it.si&&A3p.a===it.ai&&A3p.r===it.ri;a3r({ok})}
+function a3n(){A3i++;A3p={};
+  if(A3i>=A3.length){
+    setHead("Actividad 3","resultado");
+    app.innerHTML=`<div class="card"><div class="kicker">Actividad 3 terminada</div>
+      <h2>Ya diseñaron cuatro aparatos</h2>
+      <div class="big">Sin escribir una línea de código. Eso es lo que hace un ingeniero antes de programar:
+      decidir <b>qué medir</b>, <b>qué hacer</b> y <b>con qué regla</b>.<br><br>
+      Fíjense que en los cuatro casos la regla tenía la misma forma:
+      <b>si pasa esto, hacé aquello.</b> Eso en programación se llama <b>condicional</b>,
+      y es lo que vamos a aprender a escribir.<br><br>
+      Uno de estos cuatro, o el que se les ocurra a ustedes, es el que van a construir.</div>
+      ${introNav(A3step)}</div>`;
+    return}
+  a3r();
+}
+
 /* ===================== INICIO ===================== */
-home();
+portal();
 </script>
 </body>
 </html>
