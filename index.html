@@ -972,7 +972,7 @@ function setHead(t,s){const h=document.querySelector("header h1"),p=document.que
 
 /* ===================== PORTAL ===================== */
 function portal(){
-  fichaBtn.style.display="none";
+  fichaBtn.style.display="none"; roboMode(false);
   setHead("Laboratorio de Tecnologías Creativas","3° año · elegí por dónde entrar");
   app.innerHTML=`<div class="track">
     <div class="trackcard" onclick="goDatos()">
@@ -1295,7 +1295,7 @@ const MIS=[
 
 /* ---------- pantallas del track ---------- */
 function roboHome(){
-  fichaBtn.style.display="none";
+  fichaBtn.style.display="none"; roboMode(true); CURI=-1;
   setHead("Explorando robótica","3° año · de la orden suelta al aparato que decide");
   const rows=MIS.map((m,i)=>{
     const done=RDONE.includes(i), lock=i>0&&!RDONE.includes(i-1)&&!done;
@@ -1359,7 +1359,7 @@ function roboIntro(i){
 
 let RM=-1;
 function roboMis(i){
-  RM=i; simReset(false);
+  RM=i; simReset(false); roboMode(true); CURI=-1;
   const m=i>=0?MIS[i]:{t:"Modo libre",c:"probá lo que quieras",g:"Escribí lo que se te ocurra y ejecutá. Acá no hay consigna ni corrección.",th:"",s:"# probá lo que quieras\n"};
   setHead(i>=0?`Misión ${i+1}`:"Modo libre",m.t);
   const saved=localStorage.getItem(RKEY+"_code_"+i);
@@ -1514,6 +1514,62 @@ async function roboCheck(){
   .expl{background:#0b1220;border-left:3px solid var(--accent);border-radius:9px;padding:11px 14px;margin-top:11px;
     font-size:.92rem;line-height:1.6}
   .score{font-family:ui-monospace,monospace;color:var(--muted);font-size:.85rem}
+
+  /* ---- modo robótica: superficie plana y ancha ---- */
+  body.robo{background:#0a0e16}
+  body.robo header{padding:12px 16px 10px}
+  body.robo header h1{font-size:1.12rem}
+  body.robo header p{font-size:.78rem}
+  .wrap.wide{max-width:1240px;padding:4px 26px 56px}
+  .ilay{display:grid;grid-template-columns:264px minmax(0,1fr);gap:22px;align-items:start}
+  @media(max-width:1000px){.ilay{grid-template-columns:1fr}.iside{display:none}}
+  .iside{position:sticky;top:12px;background:#0e1420;border:1px solid #1c2536;border-radius:18px;
+    padding:12px 8px;max-height:calc(100vh - 96px);overflow:auto}
+  .iside::-webkit-scrollbar{width:6px}.iside::-webkit-scrollbar-thumb{background:#243045;border-radius:9px}
+  .iside .sh{font-size:.66rem;letter-spacing:.9px;text-transform:uppercase;color:#5b6b83;font-weight:800;
+    padding:8px 12px 6px}
+  .iso{display:flex;gap:10px;align-items:baseline;padding:8px 12px;border-radius:10px;cursor:pointer;
+    font-size:.87rem;line-height:1.35;color:#93a3b8;transition:.12s}
+  .iso:hover{background:#151e2e;color:#e2e8f0}
+  .iso.cur{background:rgba(56,189,248,.13);color:#f1f5f9;font-weight:700;box-shadow:inset 2px 0 0 var(--accent)}
+  .iso .isn{font-family:ui-monospace,monospace;font-size:.71rem;color:#46566e;min-width:15px;flex:none}
+  .iso.cur .isn{color:var(--accent)}
+  .iso.isact{color:#d7a94a}
+  .iso.isact.cur{background:rgba(251,191,36,.13);box-shadow:inset 2px 0 0 var(--warn)}
+  .iso.isact.cur .isn{color:var(--warn)}
+  .isidefoot{border-top:1px solid #1c2536;margin-top:10px;padding:10px 12px 4px}
+  .isidefoot a{color:#5b6b83;font-size:.8rem;cursor:pointer;text-decoration:none;display:block;padding:4px 0}
+  .isidefoot a:hover{color:var(--accent)}
+  .icard{background:#101827;border:1px solid #1c2536;border-radius:22px;padding:36px 44px 28px;position:relative;overflow:hidden}
+  .icard.narrow{max-width:860px;margin:0 auto}
+  @media(max-width:700px){.icard{padding:24px 20px;border-radius:16px}}
+  .icard .topbar{position:absolute;left:0;right:0;top:0;height:3px;background:#18202f}
+  .icard .topbar i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),var(--b1),var(--b2));transition:.3s}
+  .icard h2.ih{font-size:2.15rem;line-height:1.12;margin:10px 0 22px;letter-spacing:-.022em;color:#fff}
+  @media(max-width:700px){.icard h2.ih{font-size:1.6rem}}
+  .icard .big{font-size:1.2rem;line-height:1.78}
+  .icard .qlist div{font-size:1.15rem;padding:15px 20px}
+  .icard .tli .d{font-size:1.03rem}
+  .icard .tli .y{font-size:.95rem}
+  .icard .cur{font-size:1.03rem;padding:15px 18px}
+  .icard .box ul{font-size:.98rem}
+  .icard .fnode{padding:18px 14px}
+  .icard .fnode .fh{font-size:1.05rem;letter-spacing:.02em}
+  .icard .fnode .fs{font-size:.85rem}
+  .icard .water{font-size:1rem}
+  .icard .hint{font-size:1rem;padding:14px 16px}
+  .icard .achoice button{font-size:1.1rem;padding:16px 20px}
+  .icard .expl{font-size:1.02rem;padding:14px 18px}
+  .icard .consigna p{font-size:1.15rem}
+  .icard .two{gap:16px}
+  .icard .plc .p1{padding:16px 18px}
+  .icard .plc .p1 .pn2{font-size:1.08rem}
+  .icard .plc .p1 .pd{font-size:.96rem}
+  .navb .btn{padding:15px 22px;font-size:1.05rem}
+  .kbhint{text-align:center;color:#46566e;font-size:.76rem;margin-top:12px}
+  /* menú del track: ancho cómodo, no estirado de punta a punta */
+  body.robo .wrap.wide > .card,body.robo .wrap.wide > .trackcard,body.robo .wrap.wide > .btn{
+    max-width:880px;margin-left:auto;margin-right:auto}
 `;document.head.appendChild(s)})();
 
 /* ---------------- contenido de la presentación ---------------- */
@@ -1760,25 +1816,59 @@ const IST=[
   La primera es prender una luz.</div>`}
 ];
 
+/* etiquetas cortas para el índice lateral */
+const NAVL=["Apertura","Preguntas para pensar","Actividad 1","Qué es un robot","Línea histórica",
+ "Curiosidades","Hardware y software","Actividad 2","Cómo está hecho","Sensores","Actuadores",
+ "Electricidad","Digital y analógico","Placas","Actividad 3","El hilo con los datos",
+ "La regla de la IA","Cierre"];
+
+let CURI=-1;
+function roboMode(on){
+  const w=document.querySelector(".wrap");
+  if(on){document.body.classList.add("robo");if(w)w.classList.add("wide")}
+  else{document.body.classList.remove("robo");if(w)w.classList.remove("wide");CURI=-1}
+}
+function isideHTML(cur){
+  const items=IST.map((s,i)=>`<div class="iso ${i===cur?"cur":""} ${s.act?"isact":""}" onclick="introGo(${i})">
+      <span class="isn">${i+1}</span><span>${NAVL[i]||s.t}</span></div>`).join("");
+  return `<aside class="iside">
+    <div class="sh">Introducción a la robótica</div>
+    ${items}
+    <div class="isidefoot">
+      <a onclick="roboHome()">← Salir de la introducción</a>
+      <a onclick="portal()">Ir al panel general</a>
+    </div></aside>`;
+}
+function ilay(cur,inner){return `<div class="ilay">${isideHTML(cur)}<div>${inner}</div></div>`}
+
 function introGo(i){
-  fichaBtn.style.display="none";
+  fichaBtn.style.display="none"; roboMode(true);
   if(i<0)i=0; if(i>=IST.length)return roboHome();
   const s=IST[i];
   setHead("Introducción a la robótica",`${i+1} de ${IST.length}`);
-  if(s.act)return [null,act1,act2,act3][s.act](i);
-  app.innerHTML=`<div class="card">
-    <div class="prog"><i style="width:${(i+1)/IST.length*100}%"></i></div>
+  if(s.act){CURI=-1;return [null,act1,act2,act3][s.act](i)}
+  CURI=i;
+  app.innerHTML=ilay(i,`<div class="icard">
+    <div class="topbar"><i style="width:${(i+1)/IST.length*100}%"></i></div>
     <div class="kicker">${s.k}</div>
-    <h2 style="font-size:1.45rem;margin-top:4px">${s.t}</h2>
+    <h2 class="ih">${s.t}</h2>
     ${s.h}
     ${introNav(i)}
-  </div>
-  <button class="btn ghost" onclick="roboHome()">Salir de la introducción</button>`;
+    <div class="kbhint">Podés avanzar con las flechas del teclado</div>
+  </div>`);
   window.scrollTo(0,0);
 }
 function introNav(i){return `<div class="navb">
   ${i>0?`<button class="btn ghost" onclick="introGo(${i-1})">← Anterior</button>`:""}
   <button class="btn" onclick="introGo(${i+1})">${i+1>=IST.length?"Terminar":"Siguiente →"}</button></div>`}
+
+if(typeof document.addEventListener==="function")document.addEventListener("keydown",e=>{
+  if(CURI<0)return;
+  const t=(e.target&&e.target.tagName)||"";
+  if(t==="INPUT"||t==="TEXTAREA")return;
+  if(e.key==="ArrowRight"||e.key==="PageDown"||e.key===" "){e.preventDefault();introGo(CURI+1)}
+  else if(e.key==="ArrowLeft"||e.key==="PageUp"){e.preventDefault();introGo(CURI-1)}
+});
 
 /* ---------------- ACTIVIDAD 1: ¿Es un robot? ---------------- */
 const A1=[
@@ -1798,10 +1888,10 @@ function act1(idx){
 function a1r(fbk){
   const it=A1[A1i];
   setHead("Actividad 1","¿Es un robot?");
-  app.innerHTML=`<div class="card">
-    <div class="prog"><i style="width:${(A1i+(fbk?1:0))/A1.length*100}%"></i></div>
+  app.innerHTML=ilay(A1step,`<div class="icard narrow">
+    <div class="topbar"><i style="width:${(A1i+(fbk?1:0))/A1.length*100}%"></i></div>
     <div class="kicker">Actividad 1 · ¿es un robot? · <span class="score">${A1i} de ${A1.length}</span></div>
-    <h2 style="font-size:1.35rem;margin-top:4px">${it.q}</h2>
+    <h2 class="ih" style="font-size:1.75rem">${it.q}</h2>
     <p class="muted">Acordate: tiene que <b>sensar</b>, <b>decidir</b> y <b>actuar</b>. Los tres.</p>
     <div class="achoice">
       <button ${fbk?"":`onclick="a1a(true)"`} class="${fbk?(it.r?"ok":(fbk.pick===true?"no":"")):""}">Sí, es un robot</button>
@@ -1809,20 +1899,21 @@ function a1r(fbk){
     </div>
     ${fbk?`<div class="expl"><b>${fbk.ok?"Bien. ":"Casi. "}</b>${it.e}</div>
       <div class="navb"><button class="btn" onclick="a1n()">${A1i+1>=A1.length?"Ver el resultado →":"Siguiente →"}</button></div>`:""}
-  </div>`;
+  </div>`);
   window.scrollTo(0,0);
 }
 function a1a(p){const ok=p===A1[A1i].r;if(ok)A1s++;a1r({ok,pick:p})}
 function a1n(){A1i++;
   if(A1i>=A1.length){
     setHead("Actividad 1","resultado");
-    app.innerHTML=`<div class="card">
+    CURI=A1step;
+    app.innerHTML=ilay(A1step,`<div class="icard narrow">
       <div class="kicker">Actividad 1 terminada</div>
-      <h2>${A1s} de ${A1.length}</h2>
+      <h2 class="ih">${A1s} de ${A1.length}</h2>
       <div class="big">Lo importante no es el puntaje. Es que la palabra "robot" es más borrosa de lo que parece,
       y que el filtro que sirve es el del medio: <b>¿decide algo, o siempre hace lo mismo?</b><br><br>
       La mayoría de las máquinas que nos rodean sensan y actúan. Muy pocas deciden.</div>
-      ${introNav(A1step)}</div>`;
+      ${introNav(A1step)}</div>`);
     return}
   a1r();
 }
@@ -1843,30 +1934,31 @@ function act2(idx){A2i=0;A2s=0;A2step=idx;a2r()}
 function a2r(fbk){
   const it=A2[A2i];
   setHead("Actividad 2","¿Hardware o software?");
-  app.innerHTML=`<div class="card">
-    <div class="prog"><i style="width:${(A2i+(fbk?1:0))/A2.length*100}%"></i></div>
-    <div class="kicker">Actividad 2 · <span class="score">${A2i} de ${A2.length}</span></div>
-    <h2 style="font-size:1.35rem;margin-top:4px">${it.q}</h2>
+  app.innerHTML=ilay(A2step,`<div class="icard narrow">
+    <div class="topbar"><i style="width:${(A2i+(fbk?1:0))/A2.length*100}%"></i></div>
+    <div class="kicker">Actividad 2 · ¿hardware o software? · <span class="score">${A2i} de ${A2.length}</span></div>
+    <h2 class="ih" style="font-size:1.75rem">${it.q}</h2>
     <div class="achoice">
       <button ${fbk?"":`onclick="a2a('h')"`} class="${fbk?(it.r==="h"?"ok":(fbk.pick==="h"?"no":"")):""}">Hardware — se toca</button>
       <button ${fbk?"":`onclick="a2a('s')"`} class="${fbk?(it.r==="s"?"ok":(fbk.pick==="s"?"no":"")):""}">Software — son instrucciones</button>
     </div>
     ${fbk?`<div class="expl"><b>${fbk.ok?"Bien. ":"Casi. "}</b>${it.e}</div>
       <div class="navb"><button class="btn" onclick="a2n()">${A2i+1>=A2.length?"Ver el resultado →":"Siguiente →"}</button></div>`:""}
-  </div>`;
+  </div>`);
   window.scrollTo(0,0);
 }
 function a2a(p){const ok=p===A2[A2i].r;if(ok)A2s++;a2r({ok,pick:p})}
 function a2n(){A2i++;
   if(A2i>=A2.length){
     setHead("Actividad 2","resultado");
-    app.innerHTML=`<div class="card"><div class="kicker">Actividad 2 terminada</div>
-      <h2>${A2s} de ${A2.length}</h2>
+    CURI=A2step;
+    app.innerHTML=ilay(A2step,`<div class="icard narrow"><div class="kicker">Actividad 2 terminada</div>
+      <h2 class="ih">${A2s} de ${A2.length}</h2>
       <div class="big">La frontera no siempre es obvia, y el caso de los planos de Arduino es el más interesante:
       <b>información sobre cómo hacer hardware, distribuida libremente.</b> Eso es lo que hizo que estas placas
       costaran diez mil pesos en vez de cien mil.<br><br>
       Y no se olviden de lo central: <b>mismo hardware + distinto software = otro aparato.</b></div>
-      ${introNav(A2step)}</div>`;
+      ${introNav(A2step)}</div>`);
     return}
   a2r();
 }
@@ -1905,9 +1997,9 @@ function a3r(show){
       <button ${show?"":`onclick="a3pick('${key}',${k})"`}
         class="${show?(k===correct?"ok":(A3p[key]===k?"no":"")):(A3p[key]===k?"ok":"")}">${o}</button>`).join("")}</div>`;
   const ready=A3p.s!==undefined&&A3p.a!==undefined&&A3p.r!==undefined;
-  app.innerHTML=`<div class="card">
-    <div class="prog"><i style="width:${(A3i+(show?1:0))/A3.length*100}%"></i></div>
-    <div class="kicker">Actividad 3 · caso ${A3i+1} de ${A3.length}</div>
+  app.innerHTML=ilay(A3step,`<div class="icard narrow">
+    <div class="topbar"><i style="width:${(A3i+(show?1:0))/A3.length*100}%"></i></div>
+    <div class="kicker">Actividad 3 · armá el sistema · caso ${A3i+1} de ${A3.length}</div>
     <div class="consigna" style="margin-top:8px"><div class="cl">EL PROBLEMA</div><p>${it.p}</p></div>
     <p class="muted">Elegí las tres piezas del sistema: qué mide, qué hace, y con qué regla decide.</p>
     ${grp("1 · ¿Qué sensor?",it.sens,it.si,"s")}
@@ -1916,7 +2008,7 @@ function a3r(show){
     ${show?`<div class="expl"><b>${show.ok?"Bien pensado. ":"Ojo con esto. "}</b>${it.e}</div>
       <div class="navb"><button class="btn" onclick="a3n()">${A3i+1>=A3.length?"Terminar →":"Siguiente caso →"}</button></div>`
      :`<div class="navb"><button class="btn" ${ready?"":'disabled style="opacity:.4"'} onclick="a3ok()">Comprobar</button></div>`}
-  </div>`;
+  </div>`);
   window.scrollTo(0,0);
 }
 function a3pick(k,v){A3p[k]=v;a3r()}
@@ -1925,14 +2017,15 @@ function a3ok(){const it=A3[A3i];
 function a3n(){A3i++;A3p={};
   if(A3i>=A3.length){
     setHead("Actividad 3","resultado");
-    app.innerHTML=`<div class="card"><div class="kicker">Actividad 3 terminada</div>
-      <h2>Ya diseñaron cuatro aparatos</h2>
+    CURI=A3step;
+    app.innerHTML=ilay(A3step,`<div class="icard narrow"><div class="kicker">Actividad 3 terminada</div>
+      <h2 class="ih">Ya diseñaron cuatro aparatos</h2>
       <div class="big">Sin escribir una línea de código. Eso es lo que hace un ingeniero antes de programar:
       decidir <b>qué medir</b>, <b>qué hacer</b> y <b>con qué regla</b>.<br><br>
       Fíjense que en los cuatro casos la regla tenía la misma forma:
       <b>si pasa esto, hacé aquello.</b> Eso en programación se llama <b>condicional</b>,
       y aparece en cualquier programa, tenga o no un aparato atrás.</div>
-      ${introNav(A3step)}</div>`;
+      ${introNav(A3step)}</div>`);
     return}
   a3r();
 }
