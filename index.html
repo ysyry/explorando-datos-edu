@@ -1518,13 +1518,15 @@ async function roboCheck(){
 
 /* ---------------- contenido de la presentación ---------------- */
 const IST=[
-{t:"Explorando robótica",k:"Arranca el segundo cuatrimestre",h:`
-  <div class="big">Durante cinco meses aprendimos a <b>mirar datos</b>: armar una tabla, hacerle preguntas,
-  distinguir un dato de una opinión.<br><br>
-  Hoy empezamos otra cosa. Vamos a <b>construir un aparato</b>.<br><br>
-  Uno que mida algo del mundo real, decida solo qué hacer, y lo haga. Programado por ustedes.</div>
-  <div class="hint" style="margin-top:16px">Al final del cuatrimestre eso tiene que estar funcionando
-  arriba de una mesa en el Paseo Don Jaime.</div>`},
+{t:"Explorando robótica",k:"Empieza un tema nuevo",h:`
+  <div class="big">Durante estos meses estuvimos trabajando con <b>datos</b>: armar una tabla,
+  hacerle preguntas, distinguir un dato de una opinión.<br><br>
+  Hoy abrimos un tema nuevo, que en algún punto se cruza con eso: la <b>robótica</b>.<br><br>
+  Antes de tocar nada ni programar nada, la clase de hoy es para entender de qué estamos hablando:
+  qué es un robot y qué no, de dónde viene la idea, cómo está hecho uno por dentro,
+  y qué tiene que ver todo esto con la electricidad.</div>
+  <div class="hint" style="margin-top:16px">Hoy no hay que saber nada previo. Es una clase para mirar,
+  discutir y preguntar.</div>`},
 
 {t:"Antes que nada",k:"Preguntas para pensar",h:`
   <div class="big">No contesten rápido. Piensen y discutan.</div>
@@ -1660,8 +1662,8 @@ const IST=[
       <li><b>Motor:</b> gira y gira. Ruedas</li>
       <li><b>Relé:</b> un interruptor que la placa maneja. Con esto se prende una bomba de agua de verdad</li></ul></div>
   </div>
-  <div class="hint">El relé es la pieza clave del regador: la placa maneja 5 voltios, la bomba necesita mucho más.
-  El relé es el intermediario.</div>`},
+  <div class="hint">El relé es la pieza clave de cualquier riego automático: la placa maneja 5 voltios y una bomba
+  necesita mucho más. El relé es el intermediario entre los dos mundos.</div>`},
 
 {t:"Un poco de electricidad",k:"Lo mínimo para no quemar nada",h:`
   <div class="big">La electricidad es difícil de imaginar porque no se ve. La analogía del agua funciona bastante bien:</div>
@@ -1721,21 +1723,17 @@ const IST=[
 
 {act:3,t:"Actividad 3",k:"Armá el sistema"},
 
-{t:"De dónde venimos y a dónde vamos",k:"El hilo del año",h:`
+{t:"Dónde se cruza con lo que veníamos haciendo",k:"El hilo",h:`
   <div class="big">
-  <b>Lo que hicimos de marzo a julio:</b> aprendimos a estructurar datos en tablas, a distinguir tipos de datos,
-  a hacerle preguntas a un conjunto de datos y a no confundir lo que se observa con lo que se interpreta.<br><br>
-  <b>El problema que tuvimos:</b> nunca pudimos conseguir datos propios. Medir la huerta durante meses,
-  a mano, una vez por semana, no daba.<br><br>
-  <b>La vuelta que damos hoy:</b> en vez de medir la huerta, le construimos algo que mida sola.
-  Todo lo que aprendimos sobre datos sigue sirviendo. Lo que faltaba era la fuente.</div>
-  <div class="flow" style="margin-top:18px">
-    <div class="fnode i"><div class="fh">Agosto</div><div class="fs">aprender a programar la placa, misión por misión</div></div>
-    <div class="farr">→</div>
-    <div class="fnode p"><div class="fh">Septiembre</div><div class="fs">cada equipo diseña y arma su aparato</div></div>
-    <div class="farr">→</div>
-    <div class="fnode o"><div class="fh">Octubre</div><div class="fs">funcionando en el Paseo Don Jaime</div></div>
-  </div>`},
+  Estos meses aprendimos a estructurar datos en tablas, a distinguir tipos de datos, a hacerle preguntas
+  a un conjunto de datos y a no confundir lo que se observa con lo que se interpreta.<br><br>
+  Pero hubo una pregunta que quedó siempre dando vueltas: <b>¿de dónde salen los datos?</b><br><br>
+  Los que usamos los había medido otro. Y medir nosotros, a mano, una vez por semana, era lentísimo.<br><br>
+  Acá aparece el cruce: <b>un sensor es una máquina de producir datos.</b> Mide solo, todo el tiempo,
+  sin cansarse y sin olvidarse. Cada número que vimos en una tabla alguna vez salió de algún lado,
+  y muchas veces salió de algo parecido a esto.</div>
+  <div class="hint" style="margin-top:16px">Eso es lo que vamos a ir explorando en las próximas clases:
+  cómo se le dan órdenes a una placa, empezando por lo más simple.</div>`},
 
 {t:"La única regla del cuatrimestre",k:"Sobre la IA",h:`
   <div class="big">Van a usar inteligencia artificial para programar. <b>Se espera que la usen.</b>
@@ -1755,7 +1753,7 @@ const IST=[
   <div class="qlist">
     <div>Una cosa que me sorprendió hoy</div>
     <div>Algo que creía y resultó que no era así</div>
-    <div>Qué aparato me gustaría construir para la huerta</div>
+    <div>Algo de la escuela o de mi casa que se podría automatizar</div>
     <div>Una duda que me quedó</div>
   </div>
   <div class="hint" style="margin-top:14px">La próxima clase arrancamos con las misiones de programación.
@@ -1791,7 +1789,7 @@ const A1=[
  {q:"Una puerta corrediza de supermercado",r:false,e:"No. Sensa (detecta que te acercás) y actúa (abre), pero no decide nada: siempre hace exactamente lo mismo. Le falta el paso del medio."},
  {q:"Una Roomba",r:true,e:"Sí. Sensa (choques, suciedad, escalones), decide (arma el recorrido, vuelve a cargar) y actúa (se mueve y aspira)."},
  {q:"Un reloj despertador",r:false,e:"No. Mide el tiempo y suena a la hora fijada. No hay decisión, hay una condición programada de fábrica que siempre es la misma."},
- {q:"El aparato que vamos a construir",r:true,e:"Sí, y es la gracia. Va a sensar la humedad de la tierra, decidir según lo que ustedes programen, y actuar prendiendo algo. Los tres pasos, hechos por ustedes."}
+ {q:"Un riego automático que mide la tierra y decide si abrir el agua",r:true,e:"Sí. Sensa (la humedad de la tierra), decide (si está seca o no) y actúa (abre o no el agua). Los tres pasos. Y fijate que es de los más simples de la lista: un robot no necesita ser complicado."}
 ];
 let A1i=0,A1s=0,A1step=null;
 function act1(idx){
@@ -1933,8 +1931,7 @@ function a3n(){A3i++;A3p={};
       decidir <b>qué medir</b>, <b>qué hacer</b> y <b>con qué regla</b>.<br><br>
       Fíjense que en los cuatro casos la regla tenía la misma forma:
       <b>si pasa esto, hacé aquello.</b> Eso en programación se llama <b>condicional</b>,
-      y es lo que vamos a aprender a escribir.<br><br>
-      Uno de estos cuatro, o el que se les ocurra a ustedes, es el que van a construir.</div>
+      y aparece en cualquier programa, tenga o no un aparato atrás.</div>
       ${introNav(A3step)}</div>`;
     return}
   a3r();
