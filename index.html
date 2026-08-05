@@ -974,7 +974,7 @@ function setHead(t,s){const h=document.querySelector("header h1"),p=document.que
 function portal(){
   fichaBtn.style.display="none"; roboMode(false);
   setHead("Laboratorio de Tecnologías Creativas","3° año · elegí por dónde entrar");
-  app.innerHTML=`<div class="track">
+  app.innerHTML=`<div class="track" style="max-width:900px;margin:0 auto">
     <div class="trackcard" onclick="goDatos()">
       <div class="tg">Track 1</div>
       <h3>Explorando datos</h3>
@@ -1303,7 +1303,7 @@ function roboHome(){
       <div class="mnum">${done?"✓":i+1}</div>
       <div class="mt">${m.t}<div class="mc">${m.c}</div></div>
       <div class="muted">${lock?"cerrada":"→"}</div></div>`}).join("");
-  app.innerHTML=`<div class="trackcard" onclick="introGo(0)" style="margin-bottom:16px">
+  app.innerHTML=`<div class="rowrap"><div class="trackcard" onclick="introGo(0)" style="margin-bottom:16px">
       <div class="tg">Empezá por acá</div>
       <h3>Introducción a la robótica</h3>
       <p>Qué es un robot, de dónde viene, cómo está hecho por dentro y algo de electricidad.
@@ -1314,7 +1314,7 @@ function roboHome(){
       <div class="mgrid">${rows}</div>
       <button class="btn ghost" onclick="roboMis(-1)" style="margin-top:14px">Modo libre (probar sin consigna)</button>
     </div>
-    <button class="btn ghost" onclick="portal()">← Volver al panel</button>`;
+    <button class="btn ghost" onclick="portal()">← Volver al panel</button></div>`;
 }
 
 const INTRO=[
@@ -1363,7 +1363,7 @@ function roboMis(i){
   const m=i>=0?MIS[i]:{t:"Modo libre",c:"probá lo que quieras",g:"Escribí lo que se te ocurra y ejecutá. Acá no hay consigna ni corrección.",th:"",s:"# probá lo que quieras\n"};
   setHead(i>=0?`Misión ${i+1}`:"Modo libre",m.t);
   const saved=localStorage.getItem(RKEY+"_code_"+i);
-  app.innerHTML=`<div class="card">
+  app.innerHTML=`<div class="rowrap"><div class="card">
     <div class="consigna"><div class="cl">${i>=0?"CONSIGNA":"LIBRE"} · ${m.c}</div><p>${m.g}</p></div>
     ${m.th?`<details class="teoria" ${RDONE.includes(i)?"":"open"}><summary style="cursor:pointer;font-weight:700">Cómo funciona</summary>
       <div style="margin-top:8px">${m.th}</div></details>`:""}
@@ -1386,7 +1386,7 @@ function roboMis(i){
       Estructuras: <code>if / elif / else</code> · <code>while True:</code> · <code>for i in range(5):</code>
       </div></details>
     <button class="btn ghost" onclick="roboHome()">← Volver a las misiones</button>
-  </div>`;
+  </div></div>`;
   roboPaint();
 }
 function boardHTML(){
@@ -1567,9 +1567,16 @@ async function roboCheck(){
   .icard .plc .p1 .pd{font-size:.96rem}
   .navb .btn{padding:15px 22px;font-size:1.05rem}
   .kbhint{text-align:center;color:#46566e;font-size:.76rem;margin-top:12px}
-  /* menú del track: ancho cómodo, no estirado de punta a punta */
-  body.robo .wrap.wide > .card,body.robo .wrap.wide > .trackcard,body.robo .wrap.wide > .btn{
-    max-width:880px;margin-left:auto;margin-right:auto}
+  .ardwrap{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:24px;align-items:start;margin:20px 0 6px}
+  @media(max-width:900px){.ardwrap{grid-template-columns:1fr}}
+  .ardsvg{width:100%;height:auto;background:#0b1220;border:1px solid #1c2536;border-radius:16px;padding:10px}
+  .ardleg{margin:0;padding-left:26px;font-size:.95rem;line-height:1.55;color:#a9b6c8}
+  .ardleg li{margin-bottom:9px;padding-left:3px}
+  .ardleg li::marker{color:var(--warn);font-weight:800;font-family:ui-monospace,monospace}
+  .ardleg b{color:#f1f5f9}
+  /* menú del track: ancho cómodo y todo alineado a la misma caja */
+  .rowrap{max-width:900px;margin:0 auto}
+  .rowrap > .btn{margin-top:14px}
 `;document.head.appendChild(s)})();
 
 /* ---------------- contenido de la presentación ---------------- */
@@ -1777,6 +1784,106 @@ const IST=[
   desde que se enciende. No tiene sistema operativo ni escritorio. Es más limitado y por eso es más confiable:
   no se le cuelga nada.</div>`},
 
+{t:"Arduino Uno por dentro",k:"La placa que vamos a usar",h:`
+  <div class="big">Nació en <b>2005</b> en el Instituto de Diseño de Interacción de <b>Ivrea, Italia</b>.
+  La idea era tener algo barato y sencillo para estudiantes de diseño que no sabían nada de electrónica
+  ni de programación. Salió tan bien que hoy la usa medio mundo.<br><br>
+  Y es <b>hardware libre</b>: los planos de la placa son públicos. Cualquiera puede fabricarla, copiarla o
+  modificarla. Por eso una placa compatible cuesta diez mil pesos y no cien mil.</div>
+
+  <div class="ardwrap">
+    <svg class="ardsvg" viewBox="0 0 640 380" role="img" aria-label="Diagrama de una placa Arduino Uno">
+      <defs><style>
+        .bd{fill:#0d7f92}.hdr{fill:#141b26}.hole{fill:#0a1018}
+        .sil{fill:#aeb8c6}.blk{fill:#161b23}.chip{fill:#2b323d}
+        .cn{fill:#f2b630}.ct{fill:#0f1520;font:700 13px ui-monospace,monospace}
+        .lead{stroke:#f2b630;stroke-width:1.6;fill:none;opacity:.85}
+        .lbl{fill:#cbd5e1;font:600 11px system-ui}
+      </style></defs>
+      <rect x="92" y="52" width="452" height="282" rx="14" class="bd"/>
+      <circle cx="112" cy="72" r="6" fill="#0a5f6e"/><circle cx="524" cy="72" r="6" fill="#0a5f6e"/>
+      <circle cx="112" cy="314" r="6" fill="#0a5f6e"/><circle cx="524" cy="314" r="6" fill="#0a5f6e"/>
+      <!-- headers -->
+      <rect x="222" y="58" width="150" height="20" rx="3" class="hdr"/>
+      <rect x="386" y="58" width="140" height="20" rx="3" class="hdr"/>
+      <rect x="238" y="308" width="132" height="20" rx="3" class="hdr"/>
+      <rect x="392" y="308" width="118" height="20" rx="3" class="hdr"/>
+      <g class="hole">
+        <!-- agujeritos de los headers -->
+        <g id="hh"></g>
+      </g>
+      <text x="299" y="92" text-anchor="middle" fill="#cfe9ee" style="font:700 10px system-ui">DIGITAL (PWM ~)</text>
+      <text x="304" y="304" text-anchor="middle" fill="#cfe9ee" style="font:700 10px system-ui">POWER</text>
+      <text x="451" y="304" text-anchor="middle" fill="#cfe9ee" style="font:700 10px system-ui">ANALOG IN</text>
+      <!-- USB -->
+      <rect x="66" y="92" width="62" height="56" rx="4" class="sil"/>
+      <rect x="74" y="102" width="46" height="36" rx="3" fill="#7d8795"/>
+      <!-- jack -->
+      <rect x="66" y="244" width="60" height="46" rx="7" class="blk"/>
+      <circle cx="72" cy="267" r="9" fill="#2a323d"/>
+      <!-- regulador -->
+      <rect x="158" y="232" width="26" height="30" rx="3" class="blk"/>
+      <!-- micro -->
+      <rect x="330" y="212" width="172" height="62" rx="4" class="chip"/>
+      <circle cx="344" cy="243" r="6" fill="#1b212a"/>
+      <text x="424" y="248" text-anchor="middle" fill="#8b95a5" style="font:700 11px ui-monospace">ATmega328P</text>
+      <!-- cristal -->
+      <ellipse cx="250" cy="196" rx="30" ry="15" fill="#9aa4b2"/>
+      <!-- reset -->
+      <rect x="146" y="66" width="42" height="38" rx="4" class="sil"/>
+      <circle cx="167" cy="85" r="11" fill="#e05a47"/>
+      <!-- chip usb-serie -->
+      <rect x="222" y="118" width="44" height="44" rx="4" class="chip"/>
+      <!-- leds -->
+      <rect x="300" y="126" width="12" height="7" rx="2" fill="#f2b630"/>
+      <rect x="300" y="140" width="12" height="7" rx="2" fill="#34d399"/>
+      <rect x="470" y="126" width="12" height="7" rx="2" fill="#34d399"/>
+      <!-- icsp -->
+      <g fill="#141b26"><rect x="486" y="170" width="14" height="24" rx="2"/><rect x="504" y="170" width="14" height="24" rx="2"/></g>
+      <text x="404" y="160" text-anchor="middle" fill="#cfe9ee" style="font:800 26px system-ui;opacity:.55">UNO</text>
+      <!-- callouts -->
+      <g class="lead">
+        <path d="M52 120 H62"/><path d="M52 267 H62"/><path d="M138 247 H154"/>
+        <path d="M304 352 V332"/><path d="M451 352 V332"/><path d="M560 243 H506"/>
+        <path d="M560 182 H522"/><path d="M560 130 H486"/><path d="M340 133 H296"/>
+        <path d="M470 34 V54"/><path d="M330 34 V54"/><path d="M244 100 V114"/><path d="M118 46 H150 V62"/>
+      </g>
+      <g>
+        <circle cx="40" cy="120" r="13" class="cn"/><text x="40" y="125" text-anchor="middle" class="ct">1</text>
+        <circle cx="40" cy="267" r="13" class="cn"/><text x="40" y="272" text-anchor="middle" class="ct">2</text>
+        <circle cx="124" cy="247" r="13" class="cn"/><text x="124" y="252" text-anchor="middle" class="ct">3</text>
+        <circle cx="304" cy="365" r="13" class="cn"/><text x="304" y="370" text-anchor="middle" class="ct">4</text>
+        <circle cx="451" cy="365" r="13" class="cn"/><text x="451" y="370" text-anchor="middle" class="ct">5</text>
+        <circle cx="576" cy="243" r="13" class="cn"/><text x="576" y="248" text-anchor="middle" class="ct">6</text>
+        <circle cx="576" cy="182" r="13" class="cn"/><text x="576" y="187" text-anchor="middle" class="ct">7</text>
+        <circle cx="576" cy="130" r="13" class="cn"/><text x="576" y="135" text-anchor="middle" class="ct">8</text>
+        <circle cx="354" cy="133" r="13" class="cn"/><text x="354" y="138" text-anchor="middle" class="ct">9</text>
+        <circle cx="470" cy="20" r="13" class="cn"/><text x="470" y="25" text-anchor="middle" class="ct">10</text>
+        <circle cx="330" cy="20" r="13" class="cn"/><text x="330" y="25" text-anchor="middle" class="ct">11</text>
+        <circle cx="244" cy="88" r="13" class="cn"/><text x="244" y="93" text-anchor="middle" class="ct">12</text>
+        <circle cx="104" cy="46" r="13" class="cn"/><text x="104" y="51" text-anchor="middle" class="ct">13</text>
+      </g>
+    </svg>
+    <ol class="ardleg">
+      <li><b>Conector USB.</b> Por acá le cargás el programa y le das corriente desde la compu.</li>
+      <li><b>Jack de alimentación.</b> Para una fuente externa, de 7 a 12 V, cuando no está enchufada a la compu.</li>
+      <li><b>Regulador de voltaje.</b> Le baja la tensión a 5 V, entre como entre.</li>
+      <li><b>Pines de alimentación.</b> 5 V, 3,3 V, GND (tierra) y Vin. De acá salen los cables que alimentan los sensores.</li>
+      <li><b>Pines analógicos, A0 a A5.</b> Seis. Leen un número entre 0 y 1023. Acá va el sensor de humedad.</li>
+      <li><b>El microcontrolador, ATmega328P.</b> Es el cerebro: acá adentro vive tu programa. 16 MHz, 32 KB de memoria.</li>
+      <li><b>ICSP.</b> Para grabarle el arranque de fábrica. No lo vamos a tocar.</li>
+      <li><b>LED de encendido.</b> Si está prendido, la placa tiene corriente.</li>
+      <li><b>LEDs TX y RX.</b> Parpadean cuando la placa manda o recibe datos por el USB.</li>
+      <li><b>Pines digitales.</b> Catorce, del 0 al 13. Solo entienden dos estados: prendido o apagado.</li>
+      <li><b>Los que tienen ~ son PWM.</b> Seis de los catorce (3, 5, 6, 9, 10 y 11). Pueden simular valores intermedios: media luz, medio motor.</li>
+      <li><b>Chip USB-serie.</b> Traduce entre el lenguaje del USB y el del microcontrolador.</li>
+      <li><b>Botón de reset.</b> Reinicia el programa desde cero.</li>
+    </ol>
+  </div>
+
+  <div class="hint">Fíjense en el <b>13</b>: es el único pin digital que además tiene un LED soldado en la placa.
+  Por eso todos los ejemplos del mundo empiezan prendiendo el pin 13: no hace falta conectar nada.</div>`},
+
 {act:3,t:"Actividad 3",k:"Armá el sistema"},
 
 {t:"Dónde se cruza con lo que veníamos haciendo",k:"El hilo",h:`
@@ -1791,19 +1898,6 @@ const IST=[
   <div class="hint" style="margin-top:16px">Eso es lo que vamos a ir explorando en las próximas clases:
   cómo se le dan órdenes a una placa, empezando por lo más simple.</div>`},
 
-{t:"La única regla del cuatrimestre",k:"Sobre la IA",h:`
-  <div class="big">Van a usar inteligencia artificial para programar. <b>Se espera que la usen.</b>
-  Es lo que hace cualquiera que programa hoy y sería absurdo prohibirlo.<br><br>
-  Pero hay una regla, y es la única:</div>
-  <div class="airule"><b>No entra código que no puedas explicar.</b>
-    Si la IA te da algo y no sabés qué hace cada línea, le preguntás hasta entenderlo, o no lo usás.</div>
-  <div class="big">En cualquier momento voy a señalar tres líneas de tu programa y te voy a pedir que me las expliques.
-  Eso es la evaluación. No hay que estudiar nada para eso: o entendés lo que escribiste o no.<br><br>
-  Y hay algo que van a descubrir solos, en unas semanas:
-  <b>la IA no tiene el aparato adelante.</b> No sabe qué cable enchufaste ni en qué pin.
-  Va a inventar código que parece perfecto y no funciona.<br><br>
-  Cuando les pase, avisen. Esa va a ser la clase más importante del año.</div>`},
-
 {t:"Para cerrar",k:"Bitácora",h:`
   <div class="big">Cinco minutos, cada uno en su carpeta:</div>
   <div class="qlist">
@@ -1812,15 +1906,14 @@ const IST=[
     <div>Algo de la escuela o de mi casa que se podría automatizar</div>
     <div>Una duda que me quedó</div>
   </div>
-  <div class="hint" style="margin-top:14px">La próxima clase arrancamos con las misiones de programación.
-  La primera es prender una luz.</div>`}
+`}
 ];
 
 /* etiquetas cortas para el índice lateral */
 const NAVL=["Apertura","Preguntas para pensar","Actividad 1","Qué es un robot","Línea histórica",
  "Curiosidades","Hardware y software","Actividad 2","Cómo está hecho","Sensores","Actuadores",
- "Electricidad","Digital y analógico","Placas","Actividad 3","El hilo con los datos",
- "La regla de la IA","Cierre"];
+ "Electricidad","Digital y analógico","Placas","Arduino Uno por dentro","Actividad 3",
+ "El hilo con los datos","Cierre"];
 
 let CURI=-1;
 function roboMode(on){
