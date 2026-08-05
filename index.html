@@ -273,7 +273,7 @@ function colSample(c){
   const vs=uniq(c.k).slice(0,3);return vs.join(", ")+(uniq(c.k).length>3?"…":"");
 }
 function colsPanel(){return `<div class="hint" style="text-align:left">
-    <b>Tus datos tienen estas columnas.</b> Mirálas para que se te ocurra qué preguntar:
+    <b>Tus datos tienen estas columnas.</b> Miralas para que se te ocurra qué preguntar:
     <div style="margin-top:8px;display:flex;flex-direction:column;gap:4px">
     ${D.cols.map(c=>`<div><span class="pill">${c.k} <small>(${c.t==="num"?"número":"texto"})</small></span>
       <small class="muted">ej: ${colSample(c)}</small></div>`).join("")}</div></div>`;}
@@ -1393,7 +1393,7 @@ function boardHTML(){
   return `<div class="board">
     <div class="pins" id="pins"></div>
     <div class="sensorbox">
-      <label style="margin-top:0">Sensor conectado en A0 — moveló para simular la tierra</label>
+      <label style="margin-top:0">Sensor conectado en A0 — movelo para simular la tierra</label>
       <input type="range" id="an" min="0" max="1023" value="${SIM.an.A0}" oninput="anMove(this.value)">
       <div class="sread"><span>seco</span><span>crudo: <b id="anv">${SIM.an.A0}</b> &nbsp; = &nbsp; <b id="anp">${pct(SIM.an.A0).toFixed(0)}%</b></span><span>mojado</span></div>
     </div>
