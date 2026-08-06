@@ -1688,7 +1688,7 @@ const IST=[
       <li>Las instrucciones</li><li>No pesa, no se toca</li>
       <li>Se copia infinitas veces sin gastarse</li><li>Si está mal, se corrige y listo</li></ul></div>
   </div>
-  <div class="big"><b>Y acá está la idea importante del día:</b><br><br>
+  <div class="big"><br>
   El mismo hardware, con distinto software, <b>es un aparato distinto</b>.<br><br>
   La misma placa con los mismos cables puede ser un regador automático o una alarma de heladas.
   No cambia nada físico. Cambia el programa.<br><br>
@@ -1753,7 +1753,7 @@ const IST=[
     <div class="cc"><b>Resistencia</b><br><span class="muted">ohms (Ω)</span></div>
     <div class="cc">Lo angosto del caño</div><div class="cc">Cuánto se le opone al paso</div>
   </div>
-  <div class="big" style="margin-top:16px"><b>Tres reglas que alcanzan por ahora:</b><br><br>
+  <div class="big" style="margin-top:16px"><br>
   <b>1. El circuito tiene que cerrarse.</b> La corriente sale, hace su trabajo y tiene que volver.
   Si el camino está abierto, no pasa absolutamente nada. Por eso siempre hay un cable a GND (tierra).<br><br>
   <b>2. Un LED necesita una resistencia.</b> Solo, se toma toda la corriente que puede y se quema en segundos.
@@ -2582,8 +2582,7 @@ const DST=[
   <b>¿este número es confiable?</b></div>`},
 
 {k:'Procedencia',t:'¿De dónde salió este número?',h:`
-  <div class="big">Te pasan un archivo con una columna que dice <b>temperatura: 18,4</b>. Antes de usarlo,
-  cinco preguntas que un analista serio siempre hace:</div>
+  <div class="big">Te pasan un archivo con una columna que dice <b>temperatura: 18,4</b>. Antes de usarlo hay que averiguar esto:</div>
   <div class="glos">
     <div><b>¿Quién?</b> Qué instrumento lo midió. No es lo mismo una estación meteorológica que el termómetro del auto.</div>
     <div><b>¿Dónde?</b> Al sol o a la sombra. A 2 metros del piso o pegado al asfalto. Cambia todo.</div>
@@ -2594,9 +2593,8 @@ const DST=[
   <div class="hint">A esto se le llama <b>metadatos</b>: datos sobre los datos. Un dataset sin metadatos
   es casi inservible, aunque tenga miles de filas.</div>`},
 
-{k:'Medición',t:'Un sensor es un instrumento, no un oráculo',h:`
-  <div class="big">El sensor no te da la verdad. Te da <b>una estimación</b>, con su propio margen de error.
-  Cuatro palabras que conviene tener claras:</div>
+{k:'Medición',t:'El sensor es un instrumento de medición',h:`
+  <div class="big">El sensor no te da la verdad: te da una estimación, con su propio margen de error.</div>
   <div class="two" style="margin-top:14px">
     <div class="box"><h4>Exactitud</h4>
       <div style="font-size:.95rem;line-height:1.65">Qué tan cerca está del valor real.
@@ -2613,11 +2611,11 @@ const DST=[
       El de humedad de suelo se corroe y empieza a mentir de a poco.</div></div>
     <div class="box"><h4>Calibración</h4>
       <div style="font-size:.95rem;line-height:1.65">Compararlo contra algo conocido y corregirlo.
-      Sin calibrar, un sensor es un generador de números lindos.</div></div>
+      Sin calibrar, los números que devuelve no representan nada.</div></div>
   </div>`},
 
 {k:'Diseño',t:'Decisiones de muestreo',h:`
-  <div class="big">Antes de medir hay que decidir tres cosas, y ninguna es obvia:</div>
+  <div class="big">Antes de medir hay que decidir esto:</div>
   <div class="glos">
     <div><b>Frecuencia.</b> ¿Cada cuánto medís? Si medís de más, juntás millones de filas casi iguales
     y te queda un archivo imposible. Si medís de menos, te perdés lo que pasó en el medio.
@@ -2628,8 +2626,8 @@ const DST=[
     <div><b>Resolución.</b> El escalón más chico que puede distinguir. Si tu sensor salta de a 1 grado,
     no vas a poder detectar una diferencia de medio grado por más que la promedies.</div>
   </div>
-  <div class="hint">Estas tres decisiones se toman <b>antes</b> de instalar nada, y son casi imposibles
-  de arreglar después. Los datos que no mediste no existen.</div>`},
+  <div class="hint">Estas decisiones se toman <b>antes</b> de instalar nada y son casi imposibles de
+  corregir después: lo que no mediste en su momento ya no lo podés recuperar.</div>`},
 
 {k:'La cadena',t:'El recorrido completo del dato',h:`
   <div class="flow">
@@ -2651,21 +2649,33 @@ const DST=[
   <b>Automatizar es cerrar esa cadena para que gire sola.</b></div>`},
 
 {k:'Conversión',t:'Del número crudo a la magnitud',h:`
-  <div class="big">El sensor entrega un número sin unidad, por ejemplo entre 0 y 1023. Ese número no
-  significa nada hasta que lo convertís. Y para convertirlo necesitás <b>dos puntos conocidos</b>.</div>
-  <div class="serie">Sensor de humedad de suelo, calibración de dos puntos:
+  <div class="big">El sensor entrega un número sin unidad. Para convertirlo en algo que se entienda
+  necesitás <b>dos mediciones de referencia</b>, una en cada extremo.</div>
+  <div class="serie">al aire, tierra 0% húmeda     el sensor marca   820
+  en agua, tierra 100% húmeda   el sensor marca   350</div>
+  <div class="big">Lo primero que salta a la vista: en este sensor <b>más humedad da un número más
+  chico</b>. Va al revés de lo que uno esperaría.<br><br>
+  Entre 820 y 350 hay <b>470 unidades de diferencia</b>. Esas 470 unidades son todo el recorrido del
+  sensor, de seco a mojado. O sea que <b>470 unidades equivalen al 100%</b>.</div>
+  <div class="big" style="margin-top:14px">Supongamos que ahora marca <b>585</b>. Dos preguntas:</div>
+  <div class="serie">¿Cuánto se alejó del punto seco?      820 - 585  =  235 unidades
+  ¿Qué parte del recorrido es eso?      235 de 470  =  la mitad  =  50%</div>
+  <div class="big">Esos dos pasos, escritos de una sola vez:</div>
+  <div class="serie">humedad = (820 - lectura) * 100 / 470
 
-  al aire (0% de humedad)      el sensor marca   820
-  en agua (100% de humedad)    el sensor marca   350
-
-  humedad = (820 - lectura) * 100 / (820 - 350)</div>
-  <div class="big">Eso es una <b>función lineal</b>: dos puntos, una pendiente, una recta.
-  Es exactamente lo que ven en Matemática, aplicado a que un aparato entienda la tierra.<br><br>
-  Fijate un detalle importante: en este sensor <b>más humedad da un número más chico</b>.
-  Por eso la resta está al revés de lo que uno esperaría. Si no calibrás y asumís que va de 0 a 1023
-  para arriba, tu aparato riega justo al revés.</div>
-  <div class="hint">Cada sensor, incluso dos del mismo modelo, calibra distinto. La calibración es
-  <b>por sensor</b>, no por tipo de sensor.</div>`},
+  la resta   (820 - lectura)   dice cuánto te alejaste de seco
+  la división      / 470       dice qué fracción del recorrido total es
+  el          * 100            lo pasa a porcentaje</div>
+  <div class="big">Probala con los tres casos y fijate que cierra:</div>
+  <div class="serie">lectura 820   →   (820 - 820) * 100 / 470   =     0%
+  lectura 585   →   (820 - 585) * 100 / 470   =    50%
+  lectura 350   →   (820 - 350) * 100 / 470   =   100%</div>
+  <div class="big">Esto es una <b>función lineal</b>: dos puntos conocidos, una pendiente, una recta.
+  La misma que ven en Matemática. Acá la pendiente es negativa, y eso es lo que hace que el número
+  baje cuando la humedad sube.</div>
+  <div class="hint">El 820 y el 350 salen de <b>tu</b> sensor. Otro sensor del mismo modelo va a dar
+  otros dos números, así que la calibración se hace uno por uno, no por tipo de sensor.
+  Si no calibrás y asumís que el número crece con la humedad, el aparato riega justo al revés.</div>`},
 
 {k:'Datos con tiempo',t:'Series temporales',h:`
   <div class="big">Hasta ahora nuestras tablas eran fotos: una fila por provincia, una por mes.
@@ -2677,7 +2687,7 @@ const DST=[
     <div><b>Ruido.</b> Variaciones chicas sin significado. Que salte de 512 a 514 no quiere decir nada.</div>
     <div><b>Outlier.</b> Un valor que se sale de todo. Entre puros 18 y 22 aparece un 850.</div>
   </div>
-  <div class="big" style="margin-top:14px">El error clásico es <b>reaccionar al ruido</b>: si el aparato
+  <div class="big" style="margin-top:14px">Un problema frecuente es <b>reaccionar al ruido</b>: si el aparato
   decide con una sola lectura, cualquier chispazo lo hace actuar. La solución habitual es promediar las
   últimas mediciones y decidir con ese promedio.</div>`},
 
@@ -2695,7 +2705,7 @@ const DST=[
   <div class="big">La diferencia es la <b>realimentación</b>: el resultado de la acción vuelve a entrar
   como información. Un termostato, el control de crucero de un auto y el piloto automático de un avión
   son todos lazos cerrados.<br><br>
-  Y ojo con esto: un lazo cerrado <b>necesita un límite de seguridad</b>. Si el sensor se rompe y siempre
+  Un lazo cerrado <b>necesita un límite de seguridad</b>. Si el sensor se rompe y siempre
   marca seco, el sistema riega para siempre y te inunda todo.</div>`},
 
 {k:'Control',t:'Histéresis: por qué un umbral no alcanza',h:`
@@ -2741,7 +2751,7 @@ const DST=[
   </div>
   <div class="big" style="margin-top:14px">Con Arduino y software libre las respuestas son claras:
   los datos quedan en un CSV tuyo, el aparato anda sin internet, y el código lo escribiste vos.
-  <b>No es una cuestión técnica, es una decisión política</b>, y por eso conviene tomarla a conciencia.</div>`},
+  Elegir una herramienta u otra tiene consecuencias que van más allá de lo técnico.</div>`},
 
 {k:'Casos',t:'Esto ya está pasando',h:`
   <div class="glos">
@@ -2755,8 +2765,8 @@ const DST=[
     <div><b>Monitoreo de heladas.</b> En fruticultura, una red de sensores avisa qué cuadros están en
     riesgo esta noche, y en algunos casos prende los sistemas de defensa sola.</div>
   </div>
-  <div class="hint">Fijate que en los cuatro casos <b>el dato no existía antes</b>. No es que estaba
-  escondido: nadie lo había medido. Producir un dato es producir conocimiento nuevo.</div>`},
+  <div class="hint">En los cuatro casos <b>el dato no existía antes</b>. No estaba escondido en ningún
+  lado: nadie lo había medido todavía.</div>`},
 
 {k:'Fallas',t:'Cuando el sistema miente',h:`
   <div class="big">Un aparato roto que se apaga es un problema chico: te das cuenta. El problema grave es
@@ -2770,7 +2780,7 @@ const DST=[
   </div>
   <div class="big" style="margin-top:14px">Por eso un sistema serio no solo mide: <b>se controla a sí mismo</b>.
   Si el valor está fuera del rango posible, si no cambió en dos días, o si dejaron de llegar datos,
-  tiene que avisar. Un dato que no llega es información: significa que algo se rompió.</div>`},
+  tiene que avisar. Que dejen de llegar datos también es información.</div>`},
 
 {k:'Decisiones',t:'Qué automatizar, y quién decide',h:`
   <div class="big">Automatizar no es neutral. Cada vez que una máquina toma una decisión, alguien dejó
@@ -2785,8 +2795,8 @@ const DST=[
     <div><b>¿Quién se queda con lo que se ahorra?</b> Si un sistema hace el trabajo de tres personas,
     la pregunta de qué pasa con esas tres personas no la contesta la ingeniería.</div>
   </div>
-  <div class="hint">Fijate que esto es lo mismo que discutimos con la IA: la herramienta no decide sola,
-  siempre hay alguien atrás que eligió el criterio. Lo importante es que ese alguien sea visible.</div>`},
+  <div class="hint">Es lo mismo que discutimos con la IA: la herramienta no decide sola, siempre hay
+  alguien atrás que eligió el criterio.</div>`},
 
 {k:'Glosario',t:'Vocabulario del campo',h:`
   <div class="glos">
