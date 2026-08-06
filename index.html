@@ -987,6 +987,12 @@ function portal(){
       <p>Programá una placa de verdad. Empezás prendiendo una luz y terminás construyendo un aparato que mide algo
          y decide solo. Misión por misión.</p>
     </div>
+    <div class="trackcard" onclick="s4Home()">
+      <div class="tg">4to año</div>
+      <h3>De los datos al sistema</h3>
+      <p>Veníamos analizando datos que había medido otro. Acá pasamos a producirlos, y de ahí a
+         automatizar decisiones. Presentación, ejercicios de datos y ejercicios de electrónica.</p>
+    </div>
   </div>`;
 }
 function goDatos(){setHead("Constructor de Consultas","VLA en datos · armá tu consulta paso a paso");home()}
@@ -1577,6 +1583,14 @@ async function roboCheck(){
   /* menú del track: ancho cómodo y todo alineado a la misma caja */
   .rowrap{max-width:900px;margin:0 auto}
   .rowrap > .btn{margin-top:14px}
+  body.robo .wrap.wide > .card{max-width:900px;margin-left:auto;margin-right:auto}
+  .glos{display:grid;gap:9px;margin-top:12px}
+  .glos div{background:var(--card2);border-radius:11px;padding:12px 15px;font-size:.99rem;line-height:1.55}
+  .glos b{color:var(--accent);font-family:ui-monospace,monospace}
+  .serie{font-family:ui-monospace,monospace;font-size:.9rem;background:#0b1220;border:1px solid #334155;
+    border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto;white-space:pre;color:#a9e6f5;line-height:1.7}
+  .lazo{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:16px 0}
+  @media(max-width:760px){.lazo{grid-template-columns:1fr}}
 `;document.head.appendChild(s)})();
 
 /* ---------------- contenido de la presentación ---------------- */
@@ -2121,6 +2135,743 @@ function a3n(){A3i++;A3p={};
       ${introNav(A3step)}</div>`);
     return}
   a3r();
+}
+
+/* =========================================================================
+   4TO AÑO — "De los datos al sistema"
+   Presentacion de 16 pantallas + dos bancos de ejercicios (datos / electronica)
+   ========================================================================= */
+
+/* ---- bancos de ejercicios de 4to ---- */
+const EJ_DATOS=[
+ {
+  "q": "Te pasan un CSV con una columna de temperatura y nada más. ¿Qué es lo primero que preguntás?",
+  "options": [
+   "Con qué instrumento, dónde y cada cuánto se midió",
+   "Cuántas filas tiene el archivo",
+   "De qué color conviene el gráfico",
+   "Si está ordenado alfabéticamente"
+  ],
+  "answer": 0,
+  "why": "Eso son los metadatos: datos sobre los datos. Sin saber quién midió, dónde y cada cuánto, no podés interpretar ni un solo número. Un dataset sin metadatos casi no sirve."
+ },
+ {
+  "q": "Un sensor de humedad marca exactamente 0 durante tres días seguidos. ¿Qué es lo más probable?",
+  "options": [
+   "Que haya que regar más seguido",
+   "Que se haya soltado un cable",
+   "Que la tierra esté perfectamente seca",
+   "Que el sensor esté bien calibrado"
+  ],
+  "answer": 1,
+  "why": "El 0 es un valor perfectamente válido, y por eso es peligroso: el sistema se lo cree. Un valor constante durante días es la firma típica de un sensor desconectado. Un dato que no cambia nunca es sospechoso."
+ },
+ {
+  "q": "Estas son las temperaturas de una mañana. ¿Qué hacés con el 850?",
+  "options": [
+   "Borrarlo sin decir nada a nadie",
+   "Redondearlo a 18.4",
+   "Investigar qué pasó y probablemente descartarlo, dejando registro de la decisión",
+   "Promediarlo junto con el resto"
+  ],
+  "answer": 2,
+  "why": "Un outlier no se borra en silencio: se investiga y se documenta. Puede ser un error del sensor o puede ser el dato más importante del dataset. Y si lo dejás, el promedio se va arriba de 137.",
+  "code": "18.2   18.4   18.1   18.6   850.0   18.3   18.5"
+ },
+ {
+  "q": "Con esos mismos siete valores, ¿qué medida representa mejor la temperatura típica de la mañana?",
+  "options": [
+   "El promedio",
+   "El valor máximo",
+   "La suma de todos",
+   "La mediana"
+  ],
+  "answer": 3,
+  "why": "La mediana da 18.4 y el promedio da más de 137. Un solo valor extremo arrastra el promedio pero casi no mueve la mediana. Con datos de sensores conviene mirar siempre las dos."
+ },
+ {
+  "q": "Querés estudiar cómo se calienta un invernadero a lo largo del día. ¿Cada cuánto medís?",
+  "options": [
+   "Cada 5 o 10 minutos",
+   "Una vez por día",
+   "Una vez por semana",
+   "Cada milisegundo"
+  ],
+  "answer": 0,
+  "why": "La temperatura de un invernadero cambia en minutos. Una vez por día te pierde el pico del mediodía, que es justo lo que querés ver. Cada milisegundo genera millones de filas casi idénticas que no agregan nada."
+ },
+ {
+  "q": "¿Qué hace este programa?",
+  "options": [
+   "Calcula el promedio de todas las columnas",
+   "Abre el archivo y muestra las primeras filas",
+   "Borra el archivo",
+   "Hace un gráfico de los datos"
+  ],
+  "answer": 1,
+  "why": "read_csv abre el archivo y lo carga en memoria. head() muestra las primeras filas, que es lo primero que hay que hacer siempre: mirar los datos antes de analizarlos.",
+  "code": "import pandas as pd\ndatos = pd.read_csv('huerta.csv')\nprint(datos.head())"
+ },
+ {
+  "q": "\"¿Cuál fue el día más caluroso del mes?\" ¿Qué verbo de consulta responde esa pregunta?",
+  "options": [
+   "Filtrar",
+   "Graficar",
+   "Ordenar",
+   "Agrupar"
+  ],
+  "answer": 2,
+  "why": "Ordenás por temperatura de mayor a menor y mirás el primero. Filtrar te deja un subconjunto de filas, pero no te dice cuál es el mayor."
+ },
+ {
+  "q": "\"¿Cuál es la humedad promedio en cada sector de la huerta?\" ¿Qué verbo responde eso?",
+  "options": [
+   "Ordenar",
+   "Filtrar",
+   "Ninguno, no se puede responder",
+   "Agrupar"
+  ],
+  "answer": 3,
+  "why": "La pista está en el \"en cada\": hay que agrupar por sector y calcular el promedio dentro de cada grupo."
+ },
+ {
+  "q": "¿Qué muestra este programa?",
+  "options": [
+   "Cuántas mediciones estuvieron por debajo de 30",
+   "El promedio de humedad",
+   "La humedad más baja registrada",
+   "Todas las mediciones del archivo"
+  ],
+  "answer": 0,
+  "why": "La primera línea filtra las filas donde humedad es menor a 30. len() cuenta cuántas quedaron. Filtrar y después contar: dos pasos encadenados, igual que en la app de consultas.",
+  "code": "secas = datos[datos['humedad'] < 30]\nprint(len(secas))"
+ },
+ {
+  "q": "Calibraste tu sensor: al aire marca 820 y sumergido en agua marca 350. ¿Qué significa una lectura de 350?",
+  "options": [
+   "Exactamente la mitad de humedad",
+   "Humedad máxima",
+   "Humedad mínima",
+   "Un error de lectura"
+  ],
+  "answer": 1,
+  "why": "En este sensor, más humedad da un número más chico. 350 es el extremo mojado. Si asumís que el número crece con la humedad, tu aparato va a regar justo al revés."
+ },
+ {
+  "q": "Humedad de la tierra durante una semana. ¿Qué está pasando?",
+  "options": [
+   "Está subiendo",
+   "Es puro ruido, no dice nada",
+   "Baja de manera sostenida: hay una tendencia",
+   "Se mantiene estable"
+  ],
+  "answer": 2,
+  "why": "Los primeros tres días oscilan un poco y eso es ruido. Pero de jueves a domingo baja siempre. Distinguir la tendencia del ruido es lo central cuando trabajás con series temporales.",
+  "code": "lunes      62\nmartes     61\nmiércoles  63\njueves     58\nviernes    55\nsábado     52\ndomingo    49"
+ },
+ {
+  "q": "En tu CSV hay 40 filas y en 6 de ellas la columna temperatura está vacía. ¿Qué hacés?",
+  "options": [
+   "Poner 0 en las celdas vacías",
+   "Descartar todo el dataset",
+   "Ignorarlo, ya se va a acomodar",
+   "Decidir qué hacer con esas filas y dejarlo documentado"
+  ],
+  "answer": 3,
+  "why": "Poner 0 es el peor error posible: 0 es una temperatura válida y va a ensuciar todos los promedios. Podés descartar esas filas o estimarlas, pero la decisión tiene que quedar escrita."
+ },
+ {
+  "q": "Un sensor mide una vez por minuto, todo el día. ¿Cuántas filas junta en 24 horas?",
+  "options": [
+   "1440",
+   "24",
+   "60",
+   "86400"
+  ],
+  "answer": 0,
+  "why": "60 por hora, por 24 horas. En un mes son más de 43 mil filas. Por eso los sistemas reales casi siempre guardan un resumen por hora en vez de todo, o van borrando lo más viejo."
+ },
+ {
+  "q": "Descubrís que los días con más visitantes en el sendero son también los de más calor. ¿Qué podés concluir?",
+  "options": [
+   "Nada, el dato debe estar mal",
+   "Que las dos cosas van juntas, pero no que una cause la otra",
+   "Que el calor atrae turistas",
+   "Que los turistas calientan el ambiente"
+  ],
+  "answer": 1,
+  "why": "Van juntas, pero puede haber una tercera causa detrás: los días de calor son de verano, y en verano hay vacaciones. La correlación no dice quién causa a quién."
+ },
+ {
+  "q": "Pasás de medir a mano una vez por semana a un sensor automático cada 15 minutos. ¿Qué ganás y qué perdés?",
+  "options": [
+   "Perdés precisión en la medición",
+   "No cambia nada, son lo mismo",
+   "Ganás frecuencia y constancia; perdés la observación humana del contexto",
+   "Ganás todo, no perdés nada"
+  ],
+  "answer": 2,
+  "why": "El sensor no se olvida ni se toma vacaciones, pero tampoco ve que alguien pisó el cantero o que hubo granizo. Por eso los sistemas serios combinan medición automática con bitácora humana."
+ },
+ {
+  "q": "¿Para qué sirve documentar que la columna \"hum\" está en porcentaje y se midió a 10 cm de profundidad?",
+  "options": [
+   "Para que el archivo pese más",
+   "Para nada, es opcional",
+   "Para que el sensor mida mejor",
+   "Para que cualquiera, incluido vos dentro de seis meses, pueda interpretar el dato"
+  ],
+  "answer": 3,
+  "why": "A eso se le llama diccionario de datos. Sin él, dentro de seis meses no vas a saber si un 45 quiere decir 45 por ciento o 45 unidades crudas del sensor."
+ },
+ {
+  "q": "Tu sensor mide de 0 a 50 grados y lo instalás en un lugar que llega a 60. ¿Qué pasa?",
+  "options": [
+   "Marca 50 y no avisa que se pasó del rango",
+   "Marca 60 igual",
+   "Se apaga solo",
+   "Devuelve 0"
+  ],
+  "answer": 0,
+  "why": "Se satura: devuelve el tope y sigue como si nada. En el gráfico vas a ver una línea planchada en 50 que parece un dato real. Elegir bien el rango es parte del diseño, y no se puede arreglar después."
+ },
+ {
+  "q": "¿Cuál de estas alarmas detectaría que un sensor se desconectó sin que nadie se dé cuenta?",
+  "options": [
+   "No hay forma de detectarlo",
+   "Avisar si el valor no cambia en 24 horas",
+   "Avisar si el valor sube mucho",
+   "Avisar solamente si llega un 0"
+  ],
+  "answer": 1,
+  "why": "Un sensor desconectado suele devolver siempre el mismo número. Un valor perfectamente constante durante un día entero es imposible en la naturaleza: esa es la señal de que algo se rompió."
+ }
+];
+const EJ_ELEC=[
+ {
+  "q": "¿Por qué todo circuito necesita una conexión a GND, la tierra?",
+  "options": [
+   "Porque la corriente tiene que poder volver: si el circuito no se cierra, no pasa nada",
+   "Porque así se ve más prolijo",
+   "Para que no se moje",
+   "Es opcional, se puede omitir"
+  ],
+  "answer": 0,
+  "why": "La corriente sale, hace su trabajo y tiene que volver. El GND es el camino de vuelta. Es el error número uno de los que arrancan: conectar la señal y olvidarse la tierra."
+ },
+ {
+  "q": "¿Por qué un LED se conecta siempre con una resistencia en serie?",
+  "options": [
+   "Para que encienda más rápido",
+   "Para limitar la corriente: sin ella se quema",
+   "Para que brille más fuerte",
+   "Para que pueda cambiar de color"
+  ],
+  "answer": 1,
+  "why": "Un LED solo toma toda la corriente que puede y se destruye en segundos. La resistencia es el caño angosto que lo cuida."
+ },
+ {
+  "q": "Un sensor de humedad de suelo entrega un valor entre 0 y 1023. ¿A qué tipo de pin va conectado?",
+  "options": [
+   "Directo a GND",
+   "Al pin de 5V",
+   "A un pin analógico",
+   "A un pin digital"
+  ],
+  "answer": 2,
+  "why": "Los pines digitales solo distinguen dos estados. Para leer un valor dentro de un rango hace falta un pin analógico, que tiene un ADC detrás."
+ },
+ {
+  "q": "¿Qué hace el ADC de una placa?",
+  "options": [
+   "Convierte corriente alterna en continua",
+   "Amplifica la señal del sensor",
+   "Guarda los datos en memoria",
+   "Convierte un voltaje en un número que el programa puede leer"
+  ],
+  "answer": 3,
+  "why": "ADC quiere decir conversor analógico-digital. Es el que produce ese número entre 0 y 1023 a partir del voltaje que le manda el sensor."
+ },
+ {
+  "q": "¿Para qué sirve PWM?",
+  "options": [
+   "Para simular valores intermedios prendiendo y apagando muy rápido",
+   "Para medir temperatura",
+   "Para conectarse a internet",
+   "Para guardar mediciones"
+  ],
+  "answer": 0,
+  "why": "Un pin digital solo puede estar prendido o apagado. Si lo prendés y apagás miles de veces por segundo, con más tiempo prendido que apagado, el LED queda a media luz. Eso es PWM."
+ },
+ {
+  "q": "Tu placa maneja 5 voltios y la bomba de agua necesita 220. ¿Qué componente usás en el medio?",
+  "options": [
+   "Un cable más grueso",
+   "Un relé",
+   "Una resistencia más grande",
+   "Un sensor adicional"
+  ],
+  "answer": 1,
+  "why": "El relé es un interruptor que se acciona eléctricamente: la placa lo controla con 5V y él abre y cierra el circuito de 220V, sin que los dos mundos lleguen a tocarse."
+ },
+ {
+  "q": "Conectás la salida de un sensor alimentado con 5V a un pin de una placa que trabaja a 3,3V. ¿Qué puede pasar?",
+  "options": [
+   "El sensor va a medir más rápido",
+   "La placa se apaga sola sin daño",
+   "Podés dañar la placa: sus pines no toleran 5V",
+   "No pasa absolutamente nada"
+  ],
+  "answer": 2,
+  "why": "Los pines de 3,3V no son tolerantes a 5V. La regla segura es simple: si alimentás el sensor desde el pin de 3,3V, su salida nunca va a superar los 3,3V."
+ },
+ {
+  "q": "¿Cuál de estos es un ACTUADOR?",
+  "options": [
+   "Un LDR",
+   "Un termistor",
+   "Un botón",
+   "Un servo"
+  ],
+  "answer": 3,
+  "why": "El servo hace algo: gira hasta un ángulo exacto. Los otros tres se enteran de algo. El sensor se entera, el actuador hace."
+ },
+ {
+  "q": "\"Regar 5 minutos todos los días a las 8 de la mañana\". ¿Qué tipo de control es?",
+  "options": [
+   "Lazo abierto: actúa sin fijarse en el resultado",
+   "Lazo cerrado",
+   "Control con histéresis",
+   "Control con realimentación"
+  ],
+  "answer": 0,
+  "why": "No mide nada: riega igual bajo la lluvia y aunque la manguera esté tapada. Lazo cerrado sería \"regar hasta que la humedad llegue a 60%\"."
+ },
+ {
+  "q": "¿Qué le agregarías a ese riego para convertirlo en lazo cerrado?",
+  "options": [
+   "Un segundo horario de riego",
+   "Un sensor de humedad que lo haga parar cuando llega al valor buscado",
+   "Un reloj más preciso",
+   "Una bomba más potente"
+  ],
+  "answer": 1,
+  "why": "Lazo cerrado significa que el resultado de la acción vuelve a entrar como información. Sin sensor no hay realimentación posible, por más que afines el horario."
+ },
+ {
+  "q": "Tu regla dice: si baja de 40 regar, si sube de 40 parar. El relé prende y apaga cien veces por minuto. ¿Por qué?",
+  "options": [
+   "Porque falta corriente",
+   "Porque el sensor es analógico",
+   "Porque el valor queda oscilando justo encima del umbral",
+   "Porque el relé está fallado"
+  ],
+  "answer": 2,
+  "why": "Con un solo umbral, cualquier variación mínima alrededor de 40 hace conmutar el relé. Se llama castañeteo y termina quemando el relé y la bomba."
+ },
+ {
+  "q": "¿Cuál de estas reglas evita ese problema?",
+  "options": [
+   "Regar si baja de 40 y parar si sube de 40",
+   "Regar siempre, sin condición",
+   "Medir más seguido",
+   "Regar si baja de 35 y parar si sube de 50"
+  ],
+  "answer": 3,
+  "why": "Eso es histéresis: dos umbrales separados. Entre 35 y 50 el sistema sigue haciendo lo que ya venía haciendo, así que no conmuta. Es el mismo truco del termostato de una heladera."
+ },
+ {
+  "q": "Con humedad igual a 20, ¿qué hace este programa?",
+  "options": [
+   "Prende y apaga la bomba en la misma vuelta: nunca llega a regar",
+   "Riega correctamente",
+   "No hace nada",
+   "Riega para siempre"
+  ],
+  "answer": 0,
+  "why": "Son dos if sueltos y 20 cumple los dos. Prende y en la línea siguiente apaga. El segundo tendría que ser un elif, o comparar contra el estado en el que ya estaba.",
+  "code": "humedad = leer_sensor()\nif humedad < 35:\n    prender_bomba()\nif humedad < 50:\n    apagar_bomba()"
+ },
+ {
+  "q": "Apretás un botón una sola vez y el contador sube 4. ¿Qué está pasando?",
+  "options": [
+   "El programa está bien así",
+   "El contacto rebota y hay que filtrarlo por software",
+   "El botón está roto",
+   "Falta corriente"
+  ],
+  "answer": 1,
+  "why": "Los contactos mecánicos rebotan durante unos milisegundos, y la placa, que es rapidísima, lee varias pulsaciones. Se resuelve ignorando los cambios que llegan demasiado seguido."
+ },
+ {
+  "q": "Tu sensor salta entre 511, 514 y 509 sin que pase nada en la huerta. ¿Qué conviene hacer antes de decidir?",
+  "options": [
+   "Cambiar el sensor por otro",
+   "Bajar el umbral",
+   "Promediar las últimas lecturas y decidir con ese promedio",
+   "Decidir con la última lectura y listo"
+  ],
+  "answer": 2,
+  "why": "Esa variación es ruido, no información. Si el aparato decide con una sola lectura, cualquier chispazo lo hace actuar. Promediar las últimas mediciones suaviza el ruido."
+ },
+ {
+  "q": "El invernadero se recalienta al mediodía. ¿Qué combinación conviene?",
+  "options": [
+   "Sensor de luz, un LED y un solo umbral",
+   "Sensor de humedad, un buzzer y sin umbral",
+   "Un reloj que abra la ventana a las 12",
+   "Sensor de temperatura, servo que abre la ventana, y regla con dos umbrales"
+  ],
+  "answer": 3,
+  "why": "Medí la causa, que es el calor, y no algo que suele venir con ella, como la hora. El servo mueve la ventana a una posición exacta, y los dos umbrales evitan que se abra y cierre sin parar."
+ },
+ {
+  "q": "Querés saber cuánta gente entra a un sendero por día. ¿Qué necesitás como mínimo?",
+  "options": [
+   "Un sensor que detecte el paso, un contador y un registro con fecha y hora",
+   "Solamente el sensor",
+   "Una cámara filmando",
+   "Un formulario en papel"
+  ],
+  "answer": 0,
+  "why": "Detectar el paso es apenas el primer eslabón. Sin guardar el conteo con su fecha y hora no tenés serie temporal, y sin serie temporal no podés comparar días ni temporadas."
+ },
+ {
+  "q": "El aparato va a estar en la huerta, sin wifi. ¿Cómo guardás las mediciones?",
+  "options": [
+   "No hace falta guardarlas",
+   "En una tarjeta SD, con fecha y hora en cada fila",
+   "Mandándolas a la nube",
+   "En la memoria de trabajo de la placa"
+  ],
+  "answer": 1,
+  "why": "Sin conexión, el registro tiene que ser local. La memoria de trabajo de la placa se borra al cortar la corriente, así que hace falta una SD y un reloj que ponga la marca de tiempo."
+ },
+ {
+  "q": "Se corta la luz mientras el sistema está regando. Cuando vuelve, ¿qué tiene que pasar?",
+  "options": [
+   "Debe regar el doble para compensar",
+   "No importa, es lo mismo",
+   "Debe arrancar con la bomba apagada y volver a medir antes de actuar",
+   "Debe seguir regando desde donde había quedado"
+  ],
+  "answer": 2,
+  "why": "El estado seguro por defecto es todo apagado. Al arrancar, el sistema no sabe qué pasó mientras estuvo sin luz: lo primero es medir, y recién después decidir."
+ },
+ {
+  "q": "¿Qué es la deriva de un sensor?",
+  "options": [
+   "Que se desconecte de golpe",
+   "Que empiece a medir más rápido",
+   "El ruido de la señal",
+   "El corrimiento lento de sus mediciones con el paso del tiempo"
+  ],
+  "answer": 3,
+  "why": "El sensor se va corriendo de a poco, por desgaste o corrosión, y sigue entregando números perfectamente creíbles. Por eso hay que recalibrar cada tanto: la deriva no avisa."
+ }
+];
+
+const DST=[
+{k:'Arrancamos',t:'De analizar datos a producirlos',h:`
+  <div class="big">Todo este tiempo trabajamos con datos que <b>había medido otro</b>: el INTA, un censo,
+  una planilla que bajamos de algún lado.<br><br>
+  Aprendimos a hacerles preguntas, a filtrar, a agrupar, a graficar y a no confundir lo que se observa
+  con lo que se concluye. Todo eso sigue valiendo.<br><br>
+  Lo que cambia ahora es que pasamos del otro lado del mostrador: <b>vamos a producir los datos</b>.
+  Y en cuanto uno los produce, aparece una pregunta que antes no se hacía:
+  <b>¿este número es confiable?</b></div>`},
+
+{k:'Procedencia',t:'¿De dónde salió este número?',h:`
+  <div class="big">Te pasan un archivo con una columna que dice <b>temperatura: 18,4</b>. Antes de usarlo,
+  cinco preguntas que un analista serio siempre hace:</div>
+  <div class="glos">
+    <div><b>¿Quién?</b> Qué instrumento lo midió. No es lo mismo una estación meteorológica que el termómetro del auto.</div>
+    <div><b>¿Dónde?</b> Al sol o a la sombra. A 2 metros del piso o pegado al asfalto. Cambia todo.</div>
+    <div><b>¿Cuándo?</b> Fecha y hora exactas. Un promedio diario esconde que a las 6 hubo helada.</div>
+    <div><b>¿Cada cuánto?</b> Una medición por día o una por minuto son dos datasets distintos.</div>
+    <div><b>¿En qué unidad?</b> Grados centígrados, Fahrenheit, o el número crudo del sensor sin convertir.</div>
+  </div>
+  <div class="hint">A esto se le llama <b>metadatos</b>: datos sobre los datos. Un dataset sin metadatos
+  es casi inservible, aunque tenga miles de filas.</div>`},
+
+{k:'Medición',t:'Un sensor es un instrumento, no un oráculo',h:`
+  <div class="big">El sensor no te da la verdad. Te da <b>una estimación</b>, con su propio margen de error.
+  Cuatro palabras que conviene tener claras:</div>
+  <div class="two" style="margin-top:14px">
+    <div class="box"><h4>Exactitud</h4>
+      <div style="font-size:.95rem;line-height:1.65">Qué tan cerca está del valor real.
+      Un sensor que siempre marca 2 grados de más es <b>inexacto</b>.</div></div>
+    <div class="box"><h4>Precisión</h4>
+      <div style="font-size:.95rem;line-height:1.65">Qué tan parecidas son las mediciones entre sí.
+      Si medís cinco veces lo mismo y da 18,4 / 18,4 / 18,5, es <b>preciso</b>.</div></div>
+  </div>
+  <div class="big">Se pueden dar las cuatro combinaciones. Un sensor puede ser <b>preciso pero inexacto</b>:
+  siempre te da el mismo número equivocado. Y ese es el peor caso, porque parece confiable.</div>
+  <div class="two" style="margin-top:14px">
+    <div class="box"><h4>Deriva</h4>
+      <div style="font-size:.95rem;line-height:1.65">Con el tiempo el sensor se va corriendo.
+      El de humedad de suelo se corroe y empieza a mentir de a poco.</div></div>
+    <div class="box"><h4>Calibración</h4>
+      <div style="font-size:.95rem;line-height:1.65">Compararlo contra algo conocido y corregirlo.
+      Sin calibrar, un sensor es un generador de números lindos.</div></div>
+  </div>`},
+
+{k:'Diseño',t:'Decisiones de muestreo',h:`
+  <div class="big">Antes de medir hay que decidir tres cosas, y ninguna es obvia:</div>
+  <div class="glos">
+    <div><b>Frecuencia.</b> ¿Cada cuánto medís? Si medís de más, juntás millones de filas casi iguales
+    y te queda un archivo imposible. Si medís de menos, te perdés lo que pasó en el medio.
+    La humedad del suelo cambia en horas: una medición cada 15 minutos sobra. La temperatura de un
+    invernadero en un día de sol cambia en minutos.</div>
+    <div><b>Rango.</b> Qué valores puede llegar a medir. Un sensor que mide de 0 a 50 grados no sirve
+    para un freezer, y encima no te avisa: te devuelve el tope y listo.</div>
+    <div><b>Resolución.</b> El escalón más chico que puede distinguir. Si tu sensor salta de a 1 grado,
+    no vas a poder detectar una diferencia de medio grado por más que la promedies.</div>
+  </div>
+  <div class="hint">Estas tres decisiones se toman <b>antes</b> de instalar nada, y son casi imposibles
+  de arreglar después. Los datos que no mediste no existen.</div>`},
+
+{k:'La cadena',t:'El recorrido completo del dato',h:`
+  <div class="flow">
+    <div class="fnode i"><div class="fh">SENSAR</div><div class="fs">el sensor mide y entrega un número crudo</div></div>
+    <div class="farr">→</div>
+    <div class="fnode p"><div class="fh">CONVERTIR</div><div class="fs">ese número se vuelve una magnitud con unidad</div></div>
+    <div class="farr">→</div>
+    <div class="fnode p"><div class="fh">GUARDAR</div><div class="fs">con su fecha y hora, en un CSV o una base</div></div>
+  </div>
+  <div class="flow">
+    <div class="fnode p"><div class="fh">ANALIZAR</div><div class="fs">acá entra todo lo que ya sabemos hacer</div></div>
+    <div class="farr">→</div>
+    <div class="fnode p"><div class="fh">DECIDIR</div><div class="fs">una regla compara y elige</div></div>
+    <div class="farr">→</div>
+    <div class="fnode o"><div class="fh">ACTUAR</div><div class="fs">algo pasa en el mundo físico</div></div>
+  </div>
+  <div class="big">Los tres primeros pasos son nuevos para nosotros. Los tres últimos ya los venimos
+  haciendo, solo que a mano y después de los hechos.<br><br>
+  <b>Automatizar es cerrar esa cadena para que gire sola.</b></div>`},
+
+{k:'Conversión',t:'Del número crudo a la magnitud',h:`
+  <div class="big">El sensor entrega un número sin unidad, por ejemplo entre 0 y 1023. Ese número no
+  significa nada hasta que lo convertís. Y para convertirlo necesitás <b>dos puntos conocidos</b>.</div>
+  <div class="serie">Sensor de humedad de suelo, calibración de dos puntos:
+
+  al aire (0% de humedad)      el sensor marca   820
+  en agua (100% de humedad)    el sensor marca   350
+
+  humedad = (820 - lectura) * 100 / (820 - 350)</div>
+  <div class="big">Eso es una <b>función lineal</b>: dos puntos, una pendiente, una recta.
+  Es exactamente lo que ven en Matemática, aplicado a que un aparato entienda la tierra.<br><br>
+  Fijate un detalle importante: en este sensor <b>más humedad da un número más chico</b>.
+  Por eso la resta está al revés de lo que uno esperaría. Si no calibrás y asumís que va de 0 a 1023
+  para arriba, tu aparato riega justo al revés.</div>
+  <div class="hint">Cada sensor, incluso dos del mismo modelo, calibra distinto. La calibración es
+  <b>por sensor</b>, no por tipo de sensor.</div>`},
+
+{k:'Datos con tiempo',t:'Series temporales',h:`
+  <div class="big">Hasta ahora nuestras tablas eran fotos: una fila por provincia, una por mes.
+  Un sensor produce otra cosa: <b>el mismo dato repetido en el tiempo</b>. Eso se llama serie temporal
+  y trae conceptos nuevos.</div>
+  <div class="glos">
+    <div><b>Tendencia.</b> Hacia dónde va en el largo plazo. La tierra se va secando durante la semana.</div>
+    <div><b>Estacionalidad.</b> Lo que se repite con un ciclo. Todos los días baja de madrugada y sube al mediodía.</div>
+    <div><b>Ruido.</b> Variaciones chicas sin significado. Que salte de 512 a 514 no quiere decir nada.</div>
+    <div><b>Outlier.</b> Un valor que se sale de todo. Entre puros 18 y 22 aparece un 850.</div>
+  </div>
+  <div class="big" style="margin-top:14px">El error clásico es <b>reaccionar al ruido</b>: si el aparato
+  decide con una sola lectura, cualquier chispazo lo hace actuar. La solución habitual es promediar las
+  últimas mediciones y decidir con ese promedio.</div>`},
+
+{k:'Control',t:'Lazo abierto y lazo cerrado',h:`
+  <div class="lazo">
+    <div class="box"><h4>Lazo abierto</h4>
+      <div style="font-size:.96rem;line-height:1.7">Actúa sin fijarse en el resultado.
+      <br><br><i>Regar 5 minutos todos los días a las 8.</i><br><br>
+      Simple y barato. Pero riega igual bajo la lluvia, y si se tapó la manguera nunca se entera.</div></div>
+    <div class="box"><h4>Lazo cerrado</h4>
+      <div style="font-size:.96rem;line-height:1.7">Mide, actúa, y <b>vuelve a medir para ver si funcionó</b>.
+      <br><br><i>Regar hasta que la humedad llegue a 60%.</i><br><br>
+      Se adapta solo. Es lo que hace que un sistema sea inteligente y no apenas automático.</div></div>
+  </div>
+  <div class="big">La diferencia es la <b>realimentación</b>: el resultado de la acción vuelve a entrar
+  como información. Un termostato, el control de crucero de un auto y el piloto automático de un avión
+  son todos lazos cerrados.<br><br>
+  Y ojo con esto: un lazo cerrado <b>necesita un límite de seguridad</b>. Si el sensor se rompe y siempre
+  marca seco, el sistema riega para siempre y te inunda todo.</div>`},
+
+{k:'Control',t:'Histéresis: por qué un umbral no alcanza',h:`
+  <div class="big">Tu regla dice: <i>si la humedad baja de 40%, regar; si sube de 40%, parar.</i>
+  Parece razonable y sin embargo falla feo.</div>
+  <div class="serie">humedad:  39.8  →  riega  →  40.1  →  para  →  39.9  →  riega  →  40.2  →  para
+                       (y así cien veces por minuto)</div>
+  <div class="big">Cuando el valor queda oscilando justo en el umbral, el relé prende y apaga sin parar.
+  Se llama <b>castañeteo</b>, y quema el relé y la bomba en poco tiempo.<br><br>
+  La solución se llama <b>histéresis</b>: usar <b>dos umbrales distintos</b>.</div>
+  <div class="serie">si humedad < 35    →  empezar a regar
+  si humedad > 50    →  dejar de regar
+  entre 35 y 50      →  seguir haciendo lo que ya estaba haciendo</div>
+  <div class="hint">Es el mismo truco del termostato de una estufa o de la heladera: prenden a una
+  temperatura y cortan a otra distinta. Nunca al mismo número.</div>`},
+
+{k:'Arquitectura',t:'¿Dónde se procesa? Edge o nube',h:`
+  <div class="two">
+    <div class="box"><h4>En el borde (edge)</h4>
+      <div style="font-size:.95rem;line-height:1.7">La placa decide sola, ahí mismo.<br>
+      Anda sin internet. Responde al instante. Los datos no salen del lugar.<br>
+      Pero tiene poca capacidad y para ver los datos hay que ir hasta ahí.</div></div>
+    <div class="box"><h4>En la nube</h4>
+      <div style="font-size:.95rem;line-height:1.7">La placa manda los datos a un servidor y allá se procesa.<br>
+      Podés ver todo desde el celular, guardar años de historia, cruzar con otras fuentes.<br>
+      Pero depende de la conexión, y los datos quedan en la máquina de otro.</div></div>
+  </div>
+  <div class="big">Casi todos los sistemas reales son <b>mixtos</b>: la decisión urgente se toma en el borde
+  (si hay fuego, cortá todo, sin preguntarle a nadie) y el análisis histórico se hace en la nube.<br><br>
+  En un lugar como Villa La Angostura hay un argumento extra para el borde: <b>la conexión se cae</b>.
+  Un sistema que necesita internet para regar es un sistema que un día no riega.</div>`},
+
+{k:'Soberanía',t:'¿De quién son los datos del sensor?',h:`
+  <div class="big">Comprás un sensor de humedad para la huerta de la escuela. Viene con una app.
+  La app pide una cuenta. Los datos van a un servidor en otro país.<br><br>
+  Preguntas que hay que hacerse <b>antes</b> de instalar, no después:</div>
+  <div class="glos">
+    <div>¿Puedo <b>bajar mis datos</b> en un archivo, o quedan encerrados en la app?</div>
+    <div>Si la empresa cierra o cambia el precio, <b>¿pierdo el historial</b>?</div>
+    <div>¿El aparato <b>sigue funcionando sin internet</b> o se convierte en un ladrillo?</div>
+    <div>¿Qué más manda además de la humedad? ¿Ubicación? ¿Cada cuánto?</div>
+    <div>¿Puedo <b>ver el código</b> y modificarlo, o es una caja negra?</div>
+  </div>
+  <div class="big" style="margin-top:14px">Con Arduino y software libre las respuestas son claras:
+  los datos quedan en un CSV tuyo, el aparato anda sin internet, y el código lo escribiste vos.
+  <b>No es una cuestión técnica, es una decisión política</b>, y por eso conviene tomarla a conciencia.</div>`},
+
+{k:'Casos',t:'Esto ya está pasando',h:`
+  <div class="glos">
+    <div><b>Agricultura de precisión.</b> Sensores de humedad y estaciones meteorológicas deciden cuánto
+    regar por sector. En zonas con poca agua no es un lujo: es la diferencia entre producir o no.</div>
+    <div><b>Turismo y ambiente.</b> Contadores automáticos de personas en senderos de parques nacionales,
+    para saber cuánta gente aguanta un lugar sin degradarse. Es exactamente el tipo de dato que a nosotros
+    nos faltaba y que nadie publica.</div>
+    <div><b>Calidad de agua en lagos.</b> Boyas con sensores de temperatura y turbidez que detectan
+    floraciones de algas antes de que se vean a simple vista.</div>
+    <div><b>Monitoreo de heladas.</b> En fruticultura, una red de sensores avisa qué cuadros están en
+    riesgo esta noche, y en algunos casos prende los sistemas de defensa sola.</div>
+  </div>
+  <div class="hint">Fijate que en los cuatro casos <b>el dato no existía antes</b>. No es que estaba
+  escondido: nadie lo había medido. Producir un dato es producir conocimiento nuevo.</div>`},
+
+{k:'Fallas',t:'Cuando el sistema miente',h:`
+  <div class="big">Un aparato roto que se apaga es un problema chico: te das cuenta. El problema grave es
+  el <b>fallo silencioso</b>: sigue funcionando y sigue mandando números, pero son mentira.</div>
+  <div class="glos">
+    <div><b>Sensor sucio o corroído.</b> Sigue midiendo, pero cada vez más corrido. La deriva no avisa.</div>
+    <div><b>Cable flojo.</b> Devuelve 0. Y 0 es un número perfectamente válido: el sistema lo cree.</div>
+    <div><b>Sensor mal ubicado.</b> Mide bien, pero mide el lugar equivocado. El termómetro al sol.</div>
+    <div><b>Sesgo de instalación.</b> Todos los sensores puestos en la parte buena del campo. Los datos
+    son reales y la conclusión igual está mal.</div>
+  </div>
+  <div class="big" style="margin-top:14px">Por eso un sistema serio no solo mide: <b>se controla a sí mismo</b>.
+  Si el valor está fuera del rango posible, si no cambió en dos días, o si dejaron de llegar datos,
+  tiene que avisar. Un dato que no llega es información: significa que algo se rompió.</div>`},
+
+{k:'Decisiones',t:'Qué automatizar, y quién decide',h:`
+  <div class="big">Automatizar no es neutral. Cada vez que una máquina toma una decisión, alguien dejó
+  de tomarla, y alguien programó el criterio.</div>
+  <div class="glos">
+    <div><b>¿Qué conviene automatizar?</b> Lo repetitivo, lo peligroso y lo que hay que hacer a las tres
+    de la mañana. Lo aburrido para una persona suele ser perfecto para una máquina.</div>
+    <div><b>¿Qué conviene NO automatizar?</b> Lo que requiere juicio, lo que tiene consecuencias graves
+    si falla, y lo que le da sentido al trabajo de alguien.</div>
+    <div><b>¿Quién puso el umbral?</b> Si el sistema riega abajo de 35%, alguien eligió ese 35.
+    Ese número es una decisión humana disfrazada de dato técnico.</div>
+    <div><b>¿Quién se queda con lo que se ahorra?</b> Si un sistema hace el trabajo de tres personas,
+    la pregunta de qué pasa con esas tres personas no la contesta la ingeniería.</div>
+  </div>
+  <div class="hint">Fijate que esto es lo mismo que discutimos con la IA: la herramienta no decide sola,
+  siempre hay alguien atrás que eligió el criterio. Lo importante es que ese alguien sea visible.</div>`},
+
+{k:'Glosario',t:'Vocabulario del campo',h:`
+  <div class="glos">
+    <div><b>Microcontrolador</b> — computadora chica sin sistema operativo, corre un solo programa desde que se enciende.</div>
+    <div><b>GPIO</b> — los pines de entrada/salida de propósito general de la placa.</div>
+    <div><b>Analógico / digital</b> — un valor dentro de un rango, contra dos estados posibles.</div>
+    <div><b>ADC</b> — el conversor que transforma un voltaje en un número. El que produce el 0 a 1023.</div>
+    <div><b>PWM</b> — prender y apagar muy rápido para simular valores intermedios. Media luz, medio motor.</div>
+    <div><b>Actuador</b> — lo que convierte una orden eléctrica en algo físico.</div>
+    <div><b>Relé</b> — interruptor manejado eléctricamente. Permite que 5 voltios controlen 220.</div>
+    <div><b>Umbral</b> — el valor a partir del cual el sistema cambia de comportamiento.</div>
+    <div><b>Histéresis</b> — usar dos umbrales distintos para evitar el castañeteo.</div>
+    <div><b>Lazo cerrado</b> — el sistema mide el resultado de su propia acción y se corrige.</div>
+    <div><b>Datalogger</b> — el que guarda las mediciones con su fecha y hora.</div>
+    <div><b>Telemetría</b> — mandar mediciones a distancia.</div>
+    <div><b>Latencia</b> — cuánto tarda el sistema en reaccionar.</div>
+    <div><b>Calibración</b> — ajustar el instrumento contra un valor conocido.</div>
+    <div><b>Deriva</b> — el corrimiento lento de un sensor con el paso del tiempo.</div>
+  </div>`},
+
+{k:'Cierre',t:'Lo que cambia de acá en adelante',h:`
+  <div class="big">Veníamos preguntándole cosas a una tabla. De ahora en más también vamos a preguntarnos
+  <b>de dónde salió esa tabla</b>, y en algún momento vamos a construir la cosa que la produce.<br><br>
+  Todo lo que aprendieron sigue sirviendo igual: filtrar, agrupar, graficar, distinguir observación de
+  interpretación. Lo que se suma es el otro extremo de la cadena.<br><br>
+  Y con eso se suma una responsabilidad nueva: cuando el dato lo producís vos, <b>los errores también
+  son tuyos</b>. Un sensor mal calibrado, mal ubicado o mal muestreado produce datos que parecen
+  perfectos y no lo son.</div>
+  <div class="hint">Los dos bancos de ejercicios que siguen son para eso: el primero conecta lo que ya
+  saben de datos con esta manera de pensar. El segundo entra en la electrónica y el vocabulario.</div>`}
+];
+
+const NAV4=['Apertura','Procedencia del dato','El sensor como instrumento','Muestreo','La cadena del dato',
+ 'Conversión y calibración','Series temporales','Lazo abierto y cerrado','Histéresis','Edge o nube',
+ 'Soberanía de los datos','Casos reales','Cuando el sistema miente','Qué automatizar','Vocabulario','Cierre'];
+
+let CUR4=-1;
+function nav4HTML(cur){
+  const items=DST.map((s,i)=>'<div class="iso '+(i===cur?'cur':'')+'" onclick="d4Go('+i+')">'+
+    '<span class="isn">'+(i+1)+'</span><span>'+NAV4[i]+'</span></div>').join('');
+  return '<aside class="iside"><div class="sh">De los datos al sistema</div>'+items+
+    '<div class="isidefoot"><a onclick="s4Home()">← Volver al módulo</a>'+
+    '<a onclick="portal()">Ir al panel general</a></div></aside>';
+}
+function d4Go(i){
+  fichaBtn.style.display="none"; roboMode(true); CURI=-1;
+  if(i<0)i=0; if(i>=DST.length) return s4Home();
+  CUR4=i;
+  const s=DST[i];
+  setHead("De los datos al sistema", (i+1)+" de "+DST.length+" · 4to año");
+  app.innerHTML='<div class="ilay">'+nav4HTML(i)+'<div><div class="icard">'+
+    '<div class="topbar"><i style="width:'+((i+1)/DST.length*100)+'%"></i></div>'+
+    '<div class="kicker">'+s.k+'</div><h2 class="ih">'+s.t+'</h2>'+s.h+
+    '<div class="navb">'+(i>0?'<button class="btn ghost" onclick="d4Go('+(i-1)+')">← Anterior</button>':'')+
+    '<button class="btn" onclick="d4Go('+(i+1)+')">'+(i+1>=DST.length?'Terminar':'Siguiente →')+'</button></div>'+
+    '<div class="kbhint">Podés avanzar con las flechas del teclado</div>'+
+    '</div></div></div>';
+  window.scrollTo(0,0);
+}
+if(typeof document.addEventListener==="function")document.addEventListener("keydown",function(e){
+  if(CUR4<0)return;
+  const t=(e.target&&e.target.tagName)||"";
+  if(t==="INPUT"||t==="TEXTAREA")return;
+  if(e.key==="ArrowRight"||e.key==="PageDown"||e.key===" "){e.preventDefault();d4Go(CUR4+1)}
+  else if(e.key==="ArrowLeft"||e.key==="PageUp"){e.preventDefault();d4Go(CUR4-1)}
+});
+
+function s4Home(){
+  fichaBtn.style.display="none"; roboMode(true); CUR4=-1; CURI=-1;
+  setHead("De los datos al sistema","4to año · del análisis a la automatización");
+  app.innerHTML='<div class="rowrap">'+
+    '<div class="trackcard" onclick="d4Go(0)" style="margin-bottom:14px">'+
+      '<div class="tg">Empezá por acá</div><h3>Presentación · 16 pantallas</h3>'+
+      '<p>De dónde sale un dato, el sensor como instrumento de medición, muestreo, calibración, series '+
+      'temporales, lazo cerrado e histéresis, edge o nube, soberanía de los datos, casos reales y fallos silenciosos.</p></div>'+
+    '<div class="trackcard" onclick="quizStart(EJ_DATOS,\'Del dato al sistema\',\'s4Home()\')" style="margin-bottom:14px">'+
+      '<div class="tg">Banco 1 · '+EJ_DATOS.length+' ejercicios</div><h3>De los datos al sistema</h3>'+
+      '<p>Situaciones con datos reales de turismo, huerta y ambiente. Procedencia, muestreo, outliers, '+
+      'calibración, series temporales, Python y recetas de consulta. Conecta lo que ya saben con lo nuevo.</p></div>'+
+    '<div class="trackcard" onclick="quizStart(EJ_ELEC,\'Electrónica, control y vocabulario\',\'s4Home()\')" style="margin-bottom:14px">'+
+      '<div class="tg">Banco 2 · '+EJ_ELEC.length+' ejercicios</div><h3>Electrónica, control y vocabulario</h3>'+
+      '<p>Circuitos, pines, relés, PWM, lazo cerrado, histéresis y fallos. Situaciones para resolver '+
+      'y vocabulario técnico del campo.</p></div>'+
+    '<button class="btn ghost" onclick="portal()">← Volver al panel</button></div>';
+  window.scrollTo(0,0);
 }
 
 /* ===================== INICIO ===================== */
