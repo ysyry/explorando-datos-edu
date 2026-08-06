@@ -993,6 +993,12 @@ function portal(){
       <p>Veníamos analizando datos que había medido otro. Acá pasamos a producirlos, y de ahí a
          automatizar decisiones. Presentación, ejercicios de datos y ejercicios de electrónica.</p>
     </div>
+    <div class="trackcard" onclick="robHome()">
+      <div class="tg">Avanzado</div>
+      <h3>Robótica: cuerpos que se mueven</h3>
+      <p>Motores, drivers, alimentación, cómo dobla un robot, odometría, máquinas de estado y control
+         proporcional. Presentación de 16 pantallas y 28 ejercicios.</p>
+    </div>
   </div>`;
 }
 function goDatos(){setHead("Constructor de Consultas","VLA en datos · armá tu consulta paso a paso");home()}
@@ -2571,6 +2577,322 @@ const EJ_ELEC=[
  }
 ];
 
+/* ---- bancos del modulo de robotica ---- */
+const EJ_ROBA=[
+ {
+  "q": "Querés abrir una ventanita del invernadero hasta un ángulo exacto y que se quede ahí. ¿Qué motor usás?",
+  "options": [
+   "Un servo",
+   "Un motor de corriente continua",
+   "Un motor paso a paso",
+   "Un relé"
+  ],
+  "answer": 0,
+  "why": "El servo va a una posición concreta y la sostiene. Adentro tiene un sensor de ángulo y su propio control: vos le decís 60 grados y él se encarga."
+ },
+ {
+  "q": "Las ruedas de un robot que tiene que andar y andar. ¿Qué motor?",
+  "options": [
+   "Un solenoide",
+   "Un motor de corriente continua con caja reductora",
+   "Un servo común",
+   "Un relé"
+  ],
+  "answer": 1,
+  "why": "El motor de continua gira sin parar, que es justo lo que hace falta para una rueda. La caja reductora le baja las vueltas y le sube la fuerza."
+ },
+ {
+  "q": "Necesitás mover algo una cantidad exacta de pasos, sin usar sensores. Como el cabezal de una impresora 3D.",
+  "options": [
+   "Un servo de rotación continua",
+   "Una bomba",
+   "Un motor paso a paso",
+   "Un motor de continua"
+  ],
+  "answer": 2,
+  "why": "El paso a paso avanza de a fracciones fijas de vuelta y podés contarlas. Sabés dónde está sin necesidad de medirlo."
+ },
+ {
+  "q": "¿Por qué no se conecta un motor directamente a un pin de la placa?",
+  "options": [
+   "Porque el pin es analógico",
+   "Porque el motor necesita internet",
+   "Porque hay que programarlo antes",
+   "Porque consume mucha más corriente de la que el pin puede dar y la quema"
+  ],
+  "answer": 3,
+  "why": "Un pin entrega unos pocos miliamperes. Un motor chico pide cientos. Entre los dos va siempre un driver, que es el que maneja la corriente grande."
+ },
+ {
+  "q": "¿Para qué sirve un puente H?",
+  "options": [
+   "Para que el motor pueda girar en los dos sentidos",
+   "Para medir la velocidad",
+   "Para conectarse por wifi",
+   "Para bajar el voltaje"
+  ],
+  "answer": 0,
+  "why": "El puente H invierte la polaridad que le llega al motor, y así puede ir para adelante o para atrás. Sin él, el motor gira siempre para el mismo lado."
+ },
+ {
+  "q": "Tu robot se reinicia solo justo cuando arrancan los motores. ¿Qué está pasando?",
+  "options": [
+   "Falta un sensor",
+   "Los motores tiran de la corriente y la tensión cae por debajo de lo que la placa necesita",
+   "El programa tiene un error de sintaxis",
+   "Los motores están al revés"
+  ],
+  "answer": 1,
+  "why": "Es el clásico. El arranque de un motor pide un pico de corriente enorme. La solución es alimentar los motores con una fuente aparte, no desde la placa."
+ },
+ {
+  "q": "Si alimentás la placa con una fuente y los motores con otra, ¿qué no puede faltar?",
+  "options": [
+   "Que sean de la misma marca",
+   "Nada, funcionan sueltas",
+   "Unir las masas: el GND de las dos fuentes tiene que estar conectado",
+   "Que las dos fuentes den el mismo voltaje"
+  ],
+  "answer": 2,
+  "why": "Sin masa común no hay una referencia compartida y las señales de control no significan nada para el driver. Es una de las fallas más difíciles de encontrar."
+ },
+ {
+  "q": "Un robot con dos ruedas motorizadas y una rueda loca. ¿Cómo hace para doblar a la derecha?",
+  "options": [
+   "Gira el eje delantero",
+   "Frena las dos ruedas",
+   "Usa un volante",
+   "La rueda izquierda gira más rápido que la derecha"
+  ],
+  "answer": 3,
+  "why": "Se llama tracción diferencial: no hay volante, se dobla haciendo que un lado vaya más rápido que el otro. Es como maneja una excavadora."
+ },
+ {
+  "q": "¿Y cómo hace ese mismo robot para girar sobre su propio eje, sin desplazarse?",
+  "options": [
+   "Una rueda para adelante y la otra para atrás",
+   "Las dos para adelante",
+   "Las dos frenadas",
+   "No puede"
+  ],
+  "answer": 0,
+  "why": "Con las ruedas girando en sentidos opuestos, el robot rota en el lugar. Es una ventaja de la tracción diferencial que un auto no tiene."
+ },
+ {
+  "q": "Tu robot cuenta las vueltas de las ruedas para saber dónde está. Después de un rato está siempre desviado. ¿Por qué?",
+  "options": [
+   "Porque le falta wifi",
+   "Porque las ruedas patinan y el error se va acumulando vuelta a vuelta",
+   "Porque el programa está mal escrito",
+   "Porque los motores son distintos"
+  ],
+  "answer": 1,
+  "why": "Eso es odometría, y su problema es que el error nunca se corrige solo: se suma. Por eso los robots serios la combinan con alguna referencia externa."
+ },
+ {
+  "q": "¿Qué mide un encoder?",
+  "options": [
+   "La distancia a un obstáculo",
+   "El voltaje de la batería",
+   "Cuánto giró el eje del motor",
+   "La temperatura del motor"
+  ],
+  "answer": 2,
+  "why": "El encoder cuenta el giro del eje. Con eso podés saber cuánto avanzaste, controlar la velocidad, y darte cuenta de que la rueda no está girando aunque le estés dando corriente."
+ },
+ {
+  "q": "Querés que el robot detecte una pared antes de chocarla. ¿Qué sensor?",
+  "options": [
+   "Un pulsador de contacto",
+   "Un sensor de temperatura",
+   "Un encoder",
+   "Un sensor de ultrasonido"
+  ],
+  "answer": 3,
+  "why": "El ultrasonido mide distancia sin tocar: manda un pulso y cronometra el eco. El pulsador te avisa recién cuando ya chocaste."
+ },
+ {
+  "q": "¿Y para saber que efectivamente chocó contra algo?",
+  "options": [
+   "Un bumper, que es un pulsador en el paragolpes",
+   "Un sensor de luz",
+   "Un encoder",
+   "Un servo"
+  ],
+  "answer": 0,
+  "why": "El bumper es la última línea de defensa: barato, simple y no falla. Los robots buenos tienen las dos cosas, el que mide de lejos y el que confirma el golpe."
+ },
+ {
+  "q": "Un brazo robótico tiene tres articulaciones que giran. ¿Cuántos grados de libertad tiene?",
+  "options": [
+   "Depende del programa",
+   "Tres",
+   "Uno",
+   "Seis"
+  ],
+  "answer": 1,
+  "why": "Cada articulación que se puede mover de forma independiente es un grado de libertad. Cuantos más tiene, a más posiciones llega, y más difícil es programarlo."
+ }
+];
+const EJ_ROBB=[
+ {
+  "q": "Este robot sigue una línea negra. Con el sensor detectando negro, ¿qué hace?",
+  "options": [
+   "Pasa al estado siguiendo y avanza derecho",
+   "Gira en el lugar",
+   "Se detiene",
+   "Vuelve al inicio"
+  ],
+  "answer": 0,
+  "why": "Con negro debajo, los dos motores van a la misma velocidad y avanza recto. Cuando pierde la línea gira en el lugar hasta volver a encontrarla. Eso es una máquina de estados: el robot está en un estado y cambia según lo que sensa.",
+  "code": "estado = 'buscando'\nif sensor_ve_negro:\n    estado = 'siguiendo'\n    motor_izq = 50\n    motor_der = 50\nelse:\n    estado = 'buscando'\n    motor_izq = 40\n    motor_der = -40"
+ },
+ {
+  "q": "¿Qué es una máquina de estados en un robot?",
+  "options": [
+   "Una placa más potente",
+   "Una forma de organizar el programa en situaciones, con reglas para pasar de una a otra",
+   "Un tipo de motor",
+   "Un sensor de posición"
+  ],
+  "answer": 1,
+  "why": "Buscando, siguiendo, esquivando, cargando. En cada estado el robot hace algo distinto, y hay condiciones que lo hacen saltar de uno a otro. Es la manera estándar de programar comportamiento."
+ },
+ {
+  "q": "Control todo o nada contra control proporcional. ¿Cuál es la diferencia?",
+  "options": [
+   "El todo o nada usa menos cables",
+   "No hay diferencia real",
+   "El proporcional corrige más fuerte cuanto más lejos está del objetivo",
+   "El proporcional es más rápido siempre"
+  ],
+  "answer": 2,
+  "why": "Con todo o nada el motor va a full o está parado. Con proporcional, si estás muy desviado corregís fuerte, y si estás casi bien corregís apenas. El movimiento sale mucho más suave."
+ },
+ {
+  "q": "Programás un control proporcional y le ponés una ganancia muy alta. ¿Qué pasa?",
+  "options": [
+   "Llega más rápido y se queda quieto",
+   "No se mueve",
+   "Se apaga",
+   "El robot se pasa de largo y oscila alrededor del objetivo"
+  ],
+  "answer": 3,
+  "why": "Corrige tan fuerte que se pasa, después corrige para el otro lado y se vuelve a pasar. Ajustar esa ganancia es buena parte del trabajo de hacer que un robot ande lindo."
+ },
+ {
+  "q": "¿Qué es un watchdog en un sistema robótico?",
+  "options": [
+   "Un temporizador que reinicia el sistema si el programa se cuelga",
+   "Un sensor de movimiento",
+   "Un tipo de motor",
+   "Un protocolo de red"
+  ],
+  "answer": 0,
+  "why": "El programa tiene que avisarle periódicamente que sigue vivo. Si deja de avisar, el watchdog asume que se colgó y reinicia. Es lo que evita que un robot quede trabado para siempre."
+ },
+ {
+  "q": "Una parada de emergencia en una máquina que se mueve, ¿cómo tiene que estar hecha?",
+  "options": [
+   "Con un sensor de proximidad",
+   "Por hardware, cortando la alimentación, sin depender del programa",
+   "Por software, con un if al principio del programa",
+   "Con un mensaje en la pantalla"
+  ],
+  "answer": 1,
+  "why": "Si el programa se colgó, un botón por software no sirve para nada. La parada de emergencia corta la corriente físicamente. Es una regla de seguridad, no una preferencia de diseño."
+ },
+ {
+  "q": "Tu robot detecta el obstáculo pero igual lo choca. El sensor anda bien. ¿Qué puede estar pasando?",
+  "options": [
+   "Falta un motor",
+   "El programa no tiene errores, es imposible",
+   "Entre que mide y que frena pasa demasiado tiempo, y a esa velocidad no llega",
+   "El sensor está al revés"
+  ],
+  "answer": 2,
+  "why": "Eso es latencia. Si el robot mide una vez por segundo y va rápido, entre medición y medición recorre demasiado. Hay que medir más seguido o ir más despacio."
+ },
+ {
+  "q": "Las ruedas giran pero el robot no avanza: se quedó trabado contra algo. ¿Cómo se da cuenta el programa?",
+  "options": [
+   "Con un sensor de luz",
+   "Esperando a que alguien lo levante",
+   "No se puede detectar",
+   "Comparando lo que ordenó con lo que mide el encoder"
+  ],
+  "answer": 3,
+  "why": "Si le pedís que avance y el encoder dice que las ruedas giran pero un sensor de distancia dice que no te movés, algo pasa. Comparar la orden con el resultado es la base de detectar fallas."
+ },
+ {
+  "q": "¿Qué hace este programa?",
+  "options": [
+   "Avanza mientras haya espacio libre y dobla cuando algo se le cruza",
+   "Va siempre derecho",
+   "Gira en círculos",
+   "Se queda quieto"
+  ],
+  "answer": 0,
+  "why": "Es el robot esquiva-obstáculos más simple que existe, y ya es un lazo cerrado: mide, decide y actúa, una y otra vez.",
+  "code": "while True:\n    distancia = medir_ultrasonido()\n    if distancia > 30:\n        avanzar()\n    else:\n        frenar()\n        girar_derecha()"
+ },
+ {
+  "q": "Al programa anterior, ¿qué le agregarías para que no quede atrapado en un rincón dando vueltas?",
+  "options": [
+   "Nada, ya está bien",
+   "Contar cuántas veces giró seguido y, si son muchas, retroceder y probar otra cosa",
+   "Aumentar la velocidad",
+   "Sacar el sensor"
+  ],
+  "answer": 1,
+  "why": "Sin memoria de lo que viene haciendo, el robot repite el mismo error para siempre. Guardar cuántas veces giró seguido le da la información para cambiar de estrategia."
+ },
+ {
+  "q": "Querés un robot que recorra los canteros de la huerta midiendo humedad. ¿Cuál es la primera decisión de diseño?",
+  "options": [
+   "Qué placa comprar",
+   "Cuántos LEDs ponerle",
+   "Cómo va a saber dónde está y cómo vuelve al mismo lugar cada vez",
+   "De qué color pintarlo"
+  ],
+  "answer": 2,
+  "why": "Si no sabés en qué cantero midió, el dato no sirve para comparar en el tiempo. En un robot que se mueve, la posición es parte del dato."
+ },
+ {
+  "q": "Un brazo que separa tomates maduros de verdes. ¿Qué necesita además del brazo?",
+  "options": [
+   "Solamente más fuerza",
+   "Ruedas",
+   "Conexión a internet",
+   "Una forma de distinguirlos, por ejemplo una cámara, y una pinza que no los aplaste"
+  ],
+  "answer": 3,
+  "why": "Son las dos partes que se olvidan: cómo percibe la diferencia, y el efector final adecuado. Una pinza de metal para agarrar tomates arruina la fruta."
+ },
+ {
+  "q": "Cuando el robot recién se enciende, antes de hacer nada, ¿qué tiene que pasar?",
+  "options": [
+   "Motores parados y una comprobación de que los sensores responden",
+   "Arrancar a la velocidad de siempre",
+   "Repetir lo último que estaba haciendo",
+   "Nada en especial"
+  ],
+  "answer": 0,
+  "why": "El estado seguro por defecto es todo detenido. Al arrancar el robot no sabe dónde está ni qué pasó antes: primero se asegura de que los sensores contesten y recién después se mueve."
+ },
+ {
+  "q": "¿Qué le agrega una cámara con reconocimiento de imágenes a un robot?",
+  "options": [
+   "Le permite andar sin batería",
+   "Puede distinguir cosas que ningún sensor simple diferencia, pero se equivoca de maneras raras",
+   "Lo hace más rápido",
+   "Le da más fuerza"
+  ],
+  "answer": 1,
+  "why": "Un sensor de distancia no sabe si lo que tiene enfrente es una persona o una caja. Una cámara con un modelo entrenado sí, pero falla con la luz cambiada o con algo que nunca vio. Cambia un problema por otro."
+ }
+];
+
 const DST=[
 {k:'Arrancamos',t:'De analizar datos a producirlos',h:`
   <div class="big">Todo este tiempo trabajamos con datos que <b>había medido otro</b>: el INTA, un censo,
@@ -2880,6 +3202,290 @@ function s4Home(){
       '<div class="tg">Banco 2 · '+EJ_ELEC.length+' ejercicios</div><h3>Electrónica, control y vocabulario</h3>'+
       '<p>Circuitos, pines, relés, PWM, lazo cerrado, histéresis y fallos. Situaciones para resolver '+
       'y vocabulario técnico del campo.</p></div>'+
+    '<button class="btn ghost" onclick="portal()">← Volver al panel</button></div>';
+  window.scrollTo(0,0);
+}
+
+
+/* =========================================================================
+   MÓDULO DE ROBÓTICA — "Cuerpos que se mueven"
+   ========================================================================= */
+const RST=[
+{k:'Arrancamos',t:'Lo que cambia cuando el aparato se mueve',h:`
+  <div class="big">Hasta acá pensamos aparatos <b>quietos</b>: un sensor mide, una regla decide, algo
+  se prende. Toda la dificultad estaba en la decisión.<br><br>
+  Un robot agrega algo que parece menor y no lo es: <b>tiene cuerpo y ese cuerpo se mueve</b>.
+  Y en cuanto algo se mueve aparecen problemas que antes no existían.</div>
+  <div class="glos">
+    <div>Moverse gasta <b>fuerza</b>, y la fuerza gasta corriente. Empiezan a importar las baterías.</div>
+    <div>El robot tiene que saber <b>dónde está</b>, y no hay nadie que se lo diga.</div>
+    <div>Puede <b>chocar</b>, trabarse, volcarse, y puede lastimar a alguien.</div>
+    <div>Entre que decide y que la rueda gira <b>pasa tiempo</b>, y en ese tiempo el mundo cambió.</div>
+  </div>`},
+
+{k:'Anatomía',t:'Morfología y grados de libertad',h:`
+  <div class="big">El <b>grado de libertad</b> es cada movimiento independiente que un robot puede hacer.
+  Una articulación que gira es uno. Un brazo con tres articulaciones tiene tres.</div>
+  <div class="big" style="margin-top:14px">Cuantos más grados de libertad, a más posiciones llega, y
+  más difícil se vuelve programarlo: hay muchas combinaciones distintas de articulaciones que dejan la
+  mano en el mismo lugar, y hay que elegir una.<br><br>
+  El brazo humano, del hombro a la muñeca, tiene siete. Un brazo industrial típico tiene seis, que es
+  el mínimo para llegar a cualquier punto con cualquier orientación.</div>
+  <div class="hint">A la parte del final, la que hace el trabajo, se le dice <b>efector final</b>:
+  una pinza, una ventosa, un soplete, un pincel. El brazo lleva el efector hasta donde tiene que estar.</div>`},
+
+{k:'Familias',t:'No todos los robots se parecen',h:`
+  <div class="plc">
+    <div class="p1"><div class="pn2">Brazo industrial</div>
+      <div class="pd">Atornillado al piso, repite el mismo movimiento con una precisión de décimas de
+      milímetro, millones de veces. Es el robot más común del mundo y el que menos parece uno.</div></div>
+    <div class="p1"><div class="pn2">Robot móvil</div>
+      <div class="pd">Se desplaza. Un problema completamente distinto: tiene que saber dónde está,
+      esquivar cosas y no quedarse sin batería lejos del enchufe.</div></div>
+    <div class="p1"><div class="pn2">Dron</div>
+      <div class="pd">Móvil en tres dimensiones. Si el control falla, no se queda quieto: se cae.
+      Corrige su posición cientos de veces por segundo solo para mantenerse en el aire.</div></div>
+    <div class="p1"><div class="pn2">Robots blandos</div>
+      <div class="pd">De materiales flexibles, inflados con aire. Sirven para agarrar cosas frágiles,
+      como una fruta madura, donde una pinza rígida arruinaría todo.</div></div>
+  </div>`},
+
+{k:'Motores',t:'Cuál motor para cada cosa',h:`
+  <div class="glos">
+    <div><b>Motor de corriente continua.</b> Gira y gira mientras le des corriente. Rápido y con poca
+    fuerza, por eso casi siempre lleva una caja reductora que le baja las vueltas y le sube el empuje.
+    No sabe en qué posición está. Es el motor de las ruedas.</div>
+    <div><b>Servo.</b> Le pedís un ángulo y va a ese ángulo. Adentro tiene un motor, una reductora y un
+    sensor de posición con su propio control. Casi todos giran solo unos 180 grados. Es el motor de una
+    ventanita, una pinza, una articulación.</div>
+    <div><b>Motor paso a paso.</b> Avanza de a fracciones fijas de vuelta y las podés contar. Sabés
+    dónde está sin ningún sensor. Es el motor de una impresora 3D.</div>
+  </div>
+  <div class="hint">La pregunta que ordena la elección es siempre la misma: <b>¿necesito que gire, o
+  necesito que llegue a una posición?</b></div>`},
+
+{k:'Electrónica',t:'La placa no mueve un motor',h:`
+  <div class="big">Un pin de la placa entrega unos <b>20 miliamperes</b>. Un motor chico pide
+  <b>cientos</b>, y en el arranque muchos más. Si lo conectás directo, quemás el pin y quizás la placa.</div>
+  <div class="big" style="margin-top:14px">Entre la placa y el motor va siempre un <b>driver</b>:
+  un circuito que recibe una señal chiquita de control y maneja la corriente grande. La placa manda la
+  orden, el driver hace la fuerza.<br><br>
+  El driver más común es el <b>puente H</b>. El nombre viene del dibujo del circuito: cuatro llaves
+  formando una H con el motor en el medio. Según qué par de llaves cierre, la corriente atraviesa el
+  motor en un sentido o en el otro, y así el motor gira para adelante o para atrás.</div>
+  <div class="hint">Sin puente H, un motor solo puede girar para un lado. Con puente H y PWM,
+  además, podés controlar la velocidad.</div>`},
+
+{k:'Energía',t:'El problema de la alimentación',h:`
+  <div class="big">Este es el error que más tiempo hace perder a todo el mundo, y da un síntoma
+  desconcertante: <b>el robot se reinicia solo justo cuando arrancan los motores</b>.</div>
+  <div class="big" style="margin-top:14px">Lo que pasa es que el arranque de un motor pide un pico de
+  corriente enorme. Si comparte fuente con la placa, la tensión se desploma un instante, la placa se
+  queda sin lo que necesita y se reinicia. El programa no tiene nada que ver.</div>
+  <div class="glos" style="margin-top:14px">
+    <div><b>Fuentes separadas.</b> Una para la placa, otra para los motores.</div>
+    <div><b>Masa común.</b> Los GND de las dos fuentes tienen que estar unidos. Sin eso no hay una
+    referencia compartida y las señales de control no significan nada para el driver.</div>
+    <div><b>Autonomía.</b> Los motores son lo que se come la batería. Cuánto dura el robot es una
+    decisión de diseño, no algo que se descubre después.</div>
+  </div>`},
+
+{k:'Movimiento',t:'Cómo dobla un robot sin volante',h:`
+  <div class="big">La mayoría de los robots móviles chicos usan <b>tracción diferencial</b>: dos ruedas
+  motorizadas, una de cada lado, y una rueda loca que solo hace equilibrio. No hay volante ni dirección.</div>
+  <div class="serie">las dos ruedas a la misma velocidad     →  avanza derecho
+  la izquierda más rápido que la derecha  →  dobla a la derecha
+  una para adelante y la otra para atrás  →  gira sobre su propio eje
+  las dos para atrás                      →  retrocede</div>
+  <div class="big">Girar en el lugar es algo que un auto no puede hacer, y para un robot que trabaja en
+  espacios chicos es una ventaja enorme.<br><br>
+  Es la misma idea que usan una excavadora y un tanque, que tampoco tienen volante.</div>`},
+
+{k:'Ubicación',t:'Odometría: saber dónde estás',h:`
+  <div class="big">Si contás cuánto giró cada rueda, podés calcular cuánto avanzaste y cuánto rotaste.
+  Eso es <b>odometría</b>, y es la forma más barata de que un robot sepa dónde está.</div>
+  <div class="big" style="margin-top:14px">Tiene un problema serio: <b>el error se acumula</b>.
+  La rueda patina un poquito, el piso tiene una irregularidad, una rueda es un pelo más grande que la
+  otra. Cada error es mínimo, pero ninguno se corrige nunca: se van sumando.<br><br>
+  Después de unos minutos el robot cree estar en un lugar y está en otro, con total convicción.</div>
+  <div class="hint">Por eso los robots serios combinan la odometría con alguna <b>referencia externa</b>
+  que la corrija cada tanto: una pared conocida, una marca en el piso, una baliza, GPS. La odometría
+  dice cuánto te moviste; la referencia dice dónde estás de verdad.</div>`},
+
+{k:'Percepción',t:'Cómo mira el robot',h:`
+  <div class="two">
+    <div class="box"><h4>Sin tocar</h4>
+      <div style="font-size:.95rem;line-height:1.7">
+      <b>Ultrasonido:</b> manda un pulso y cronometra el eco. Mide distancia. Le cuestan las superficies
+      blandas y las inclinadas.<br><br>
+      <b>Infrarrojo:</b> más rápido y más barato, pero le afecta el sol y el color de lo que mira.<br><br>
+      <b>Cámara:</b> muchísima información, y muchísimo trabajo interpretarla.</div></div>
+    <div class="box"><h4>Tocando</h4>
+      <div style="font-size:.95rem;line-height:1.7">
+      <b>Bumper:</b> un pulsador en el paragolpes. Barato y no falla, pero te avisa cuando ya chocaste.<br><br>
+      <b>Encoder:</b> mide cuánto giró el eje. Sirve para la odometría y para darte cuenta de que la
+      rueda no gira aunque le estés dando corriente.<br><br>
+      <b>Sensor de corriente:</b> si el motor consume de más, algo está trabado.</div></div>
+  </div>
+  <div class="hint">Un robot bien hecho tiene <b>los dos tipos</b>. El que mide de lejos para no chocar,
+  y el que confirma el golpe cuando el otro falló.</div>`},
+
+{k:'Arquitectura',t:'El bucle de control',h:`
+  <div class="flow">
+    <div class="fnode i"><div class="fh">SENTIR</div><div class="fs">leer todos los sensores</div></div>
+    <div class="farr">→</div>
+    <div class="fnode p"><div class="fh">PENSAR</div><div class="fs">decidir qué hacer con eso</div></div>
+    <div class="farr">→</div>
+    <div class="fnode o"><div class="fh">ACTUAR</div><div class="fs">mandar las órdenes a los motores</div></div>
+  </div>
+  <div class="big">Ese ciclo se repite muchas veces por segundo, para siempre. La velocidad a la que
+  gira se llama <b>frecuencia de control</b>, y es una decisión de diseño importante.<br><br>
+  El tiempo que pasa entre que algo ocurre y el robot reacciona se llama <b>latencia</b>. Si el bucle
+  gira una vez por segundo y el robot va a medio metro por segundo, entre medición y medición recorre
+  medio metro a ciegas. Podés tener el mejor sensor del mundo: igual choca.</div>
+  <div class="hint">Cuando un robot reacciona tarde, casi nunca es culpa del sensor.
+  Es que el bucle gira demasiado lento o el robot va demasiado rápido para ese bucle.</div>`},
+
+{k:'Programación',t:'Máquinas de estado',h:`
+  <div class="big">Un robot no hace una sola cosa: hace distintas cosas según la situación. La manera
+  estándar de organizar eso es una <b>máquina de estados</b>.</div>
+  <div class="serie">BUSCANDO    gira en el lugar
+              si ve la línea      →  pasa a SIGUIENDO
+
+  SIGUIENDO   avanza derecho
+              si pierde la línea  →  vuelve a BUSCANDO
+              si detecta obstáculo →  pasa a ESQUIVANDO
+
+  ESQUIVANDO  retrocede y dobla
+              si el camino está libre →  vuelve a BUSCANDO</div>
+  <div class="big">En cada momento el robot está en <b>un solo estado</b> y hace lo que corresponde a
+  ese estado. Las condiciones son las que lo hacen saltar de uno a otro.<br><br>
+  La ventaja es que podés razonar sobre cada situación por separado, en vez de tener un montón de
+  condiciones enredadas todas juntas.</div>`},
+
+{k:'Control',t:'Del todo o nada al ajuste fino',h:`
+  <div class="big">Un seguidor de línea con control <b>todo o nada</b> hace esto: si me desvié a la
+  izquierda, giro a la derecha a fondo. Funciona, pero anda en zigzag, brusco y lento.</div>
+  <div class="big" style="margin-top:14px">El <b>control proporcional</b> mira <b>cuánto</b> te
+  desviaste, no solo hacia qué lado:</div>
+  <div class="serie">error = dónde debería estar  -  dónde estoy
+
+  corrección = error * ganancia
+
+  desviado apenas    →  corrige apenas
+  desviado mucho     →  corrige fuerte</div>
+  <div class="big">El resultado es un movimiento suave, en vez de un zigzag.<br><br>
+  El número que multiplica se llama <b>ganancia</b>, y ajustarlo es buena parte del trabajo.
+  Si es muy chica el robot corrige tarde y se sale. Si es muy grande se pasa de largo, corrige para el
+  otro lado, se vuelve a pasar, y termina oscilando.</div>
+  <div class="hint">Esto es un pariente cercano de la histéresis: en los dos casos el problema es que
+  una decisión binaria no alcanza para manejar algo que varía de manera continua.</div>`},
+
+{k:'Fallas',t:'Cuando el robot se rompe o rompe algo',h:`
+  <div class="glos">
+    <div><b>Se traba.</b> Las ruedas giran, el robot no avanza. Se detecta comparando la orden con lo
+    que dicen los sensores: si mandé avanzar y la distancia a la pared no cambia, algo pasa.</div>
+    <div><b>Se cuelga el programa.</b> Para eso está el <b>watchdog</b>: un temporizador al que el
+    programa le tiene que avisar que sigue vivo. Si deja de avisar, reinicia todo.</div>
+    <div><b>Se queda sin batería a mitad de camino.</b> Un robot serio mide su propia batería y vuelve
+    a cargar antes de quedarse.</div>
+    <div><b>Lastima a alguien.</b> La <b>parada de emergencia</b> tiene que cortar la corriente
+    <b>por hardware</b>. Si depende del programa y el programa se colgó, no sirve para nada.</div>
+  </div>
+  <div class="hint">Y al encender, siempre lo mismo: <b>motores parados</b> hasta comprobar que los
+  sensores contestan. El robot recién prendido no sabe nada del mundo ni de lo que pasó antes.</div>`},
+
+{k:'IA',t:'Robots que aprenden',h:`
+  <div class="big">Un sensor de distancia te dice que hay algo a 40 centímetros. No te dice si es una
+  caja, un perro o una persona. Para eso hace falta <b>visión</b> y un modelo entrenado.</div>
+  <div class="big" style="margin-top:14px">Eso abre posibilidades reales: robots que separan fruta
+  madura de verde, que detectan una planta enferma, que distinguen una maleza de un cultivo y aplican
+  herbicida solo ahí.<br><br>
+  Pero cambia un problema por otro. Un sensor de distancia falla de manera <b>previsible</b>: le cuesta
+  una superficie blanda. Un modelo entrenado falla de manera <b>rara</b>: anda perfecto durante meses y
+  un día, con otra luz o con algo que nunca vio, se equivoca con total seguridad.</div>
+  <div class="hint">Por eso en las aplicaciones donde una equivocación es grave, el modelo casi nunca
+  decide solo: propone, y hay un límite duro programado a mano que puede frenarlo.</div>`},
+
+{k:'Glosario',t:'Vocabulario de robótica',h:`
+  <div class="glos">
+    <div><b>Grado de libertad</b> — cada movimiento independiente que el robot puede hacer.</div>
+    <div><b>Efector final</b> — la parte del extremo que hace el trabajo: pinza, ventosa, herramienta.</div>
+    <div><b>Driver</b> — el circuito que maneja la corriente grande del motor.</div>
+    <div><b>Puente H</b> — el driver que permite invertir el sentido de giro.</div>
+    <div><b>Reductora</b> — engranajes que bajan las vueltas y suben la fuerza.</div>
+    <div><b>Encoder</b> — mide cuánto giró un eje.</div>
+    <div><b>Odometría</b> — estimar la posición contando el giro de las ruedas.</div>
+    <div><b>Tracción diferencial</b> — doblar variando la velocidad de cada lado, sin volante.</div>
+    <div><b>Máquina de estados</b> — organizar el programa en situaciones y transiciones.</div>
+    <div><b>Ganancia</b> — cuánto corrige el control por cada unidad de error.</div>
+    <div><b>Latencia</b> — el tiempo entre que algo pasa y el robot reacciona.</div>
+    <div><b>Watchdog</b> — temporizador que reinicia el sistema si el programa se cuelga.</div>
+    <div><b>Payload</b> — el peso máximo que el robot puede manipular.</div>
+    <div><b>Masa común</b> — unir los GND de dos fuentes para que compartan referencia.</div>
+  </div>`},
+
+{k:'Cierre',t:'Lo que se lleva un robot puesto',h:`
+  <div class="big">Un robot es un aparato con sensores y decisiones, como los que veníamos viendo,
+  más un cuerpo que se mueve. Y ese cuerpo trae toda una capa nueva de problemas:
+  energía, fuerza, ubicación, tiempo de reacción y seguridad.<br><br>
+  Casi todo lo difícil de la robótica no está en decidir qué hacer. Está en que el mundo real es
+  impredecible: las ruedas patinan, la batería se descarga, la luz cambia y las cosas se mueven de lugar.</div>
+  <div class="hint">Los dos bancos que siguen son para practicar esto. El primero va de cuerpo, motores
+  y movimiento. El segundo, de control, programación y situaciones para resolver.</div>`}
+];
+
+const NAVR=['Lo que cambia con el cuerpo','Grados de libertad','Familias de robots','Motores',
+ 'Drivers y puente H','Alimentación','Tracción diferencial','Odometría','Percepción','El bucle de control',
+ 'Máquinas de estado','Control proporcional','Fallas y seguridad','Robots que aprenden','Vocabulario','Cierre'];
+
+let CURR=-1;
+function navRHTML(cur){
+  const items=RST.map((s,i)=>'<div class="iso '+(i===cur?'cur':'')+'" onclick="rGo('+i+')">'+
+    '<span class="isn">'+(i+1)+'</span><span>'+NAVR[i]+'</span></div>').join('');
+  return '<aside class="iside"><div class="sh">Robótica: cuerpos que se mueven</div>'+items+
+    '<div class="isidefoot"><a onclick="robHome()">← Volver al módulo</a>'+
+    '<a onclick="portal()">Ir al panel general</a></div></aside>';
+}
+function rGo(i){
+  fichaBtn.style.display="none"; roboMode(true); CURI=-1; CUR4=-1;
+  if(i<0)i=0; if(i>=RST.length) return robHome();
+  CURR=i;
+  const s=RST[i];
+  setHead("Robótica: cuerpos que se mueven",(i+1)+" de "+RST.length);
+  app.innerHTML='<div class="ilay">'+navRHTML(i)+'<div><div class="icard">'+
+    '<div class="topbar"><i style="width:'+((i+1)/RST.length*100)+'%"></i></div>'+
+    '<div class="kicker">'+s.k+'</div><h2 class="ih">'+s.t+'</h2>'+s.h+
+    '<div class="navb">'+(i>0?'<button class="btn ghost" onclick="rGo('+(i-1)+')">← Anterior</button>':'')+
+    '<button class="btn" onclick="rGo('+(i+1)+')">'+(i+1>=RST.length?'Terminar':'Siguiente →')+'</button></div>'+
+    '<div class="kbhint">Podés avanzar con las flechas del teclado</div>'+
+    '</div></div></div>';
+  window.scrollTo(0,0);
+}
+if(typeof document.addEventListener==="function")document.addEventListener("keydown",function(e){
+  if(CURR<0)return;
+  const t=(e.target&&e.target.tagName)||"";
+  if(t==="INPUT"||t==="TEXTAREA")return;
+  if(e.key==="ArrowRight"||e.key==="PageDown"||e.key===" "){e.preventDefault();rGo(CURR+1)}
+  else if(e.key==="ArrowLeft"||e.key==="PageUp"){e.preventDefault();rGo(CURR-1)}
+});
+function robHome(){
+  fichaBtn.style.display="none"; roboMode(true); CURR=-1; CURI=-1; CUR4=-1;
+  setHead("Robótica: cuerpos que se mueven","motores, movimiento y control");
+  app.innerHTML='<div class="rowrap">'+
+    '<div class="trackcard" onclick="rGo(0)" style="margin-bottom:14px">'+
+      '<div class="tg">Empezá por acá</div><h3>Presentación · 16 pantallas</h3>'+
+      '<p>Grados de libertad, familias de robots, qué motor para cada cosa, drivers y puente H, el '+
+      'problema de la alimentación, tracción diferencial, odometría, percepción, el bucle de control, '+
+      'máquinas de estado, control proporcional, fallas y seguridad, y robots que aprenden.</p></div>'+
+    '<div class="trackcard" onclick="quizStart(EJ_ROBA,\'Cuerpo, motores y movimiento\',\'robHome()\')" style="margin-bottom:14px">'+
+      '<div class="tg">Banco A · '+EJ_ROBA.length+' ejercicios</div><h3>Cuerpo, motores y movimiento</h3>'+
+      '<p>Elegir el motor adecuado, por qué hace falta un driver, el puente H, el robot que se reinicia '+
+      'solo, masa común, cómo dobla y cómo gira en el lugar, odometría, encoders y sensores.</p></div>'+
+    '<div class="trackcard" onclick="quizStart(EJ_ROBB,\'Control, programación y situaciones\',\'robHome()\')" style="margin-bottom:14px">'+
+      '<div class="tg">Banco B · '+EJ_ROBB.length+' ejercicios</div><h3>Control, programación y situaciones</h3>'+
+      '<p>Leer máquinas de estado y código de robots, control proporcional y ganancia, latencia, '+
+      'watchdog, parada de emergencia, detección de atascos y casos para diseñar.</p></div>'+
     '<button class="btn ghost" onclick="portal()">← Volver al panel</button></div>';
   window.scrollTo(0,0);
 }
