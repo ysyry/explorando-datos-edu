@@ -2893,6 +2893,102 @@ const EJ_ROBB=[
  }
 ];
 
+/* ---- ley de tierras: datos del RNTR ---- */
+const EJ_TIERRAS=[
+ {
+  "q": "Según el Registro Nacional de Tierras Rurales, el 4,97% de la tierra rural del país está en manos extranjeras. La ley 26.737 fija un límite del 15%. ¿Se puede concluir que no hay ningún problema?",
+  "options": [
+   "No: un promedio nacional bajo puede convivir con departamentos muy por encima del límite",
+   "Sí, el país está muy por debajo del límite",
+   "Sí, porque 4,97 es menos de un tercio de 15",
+   "No se puede saber con estos datos"
+  ],
+  "answer": 0,
+  "why": "Es la misma lección del promedio y el outlier, aplicada al territorio. Un solo número para 266 millones de hectáreas esconde todo lo que pasa adentro. Y adentro hay departamentos que están más de tres veces por encima del límite.",
+  "code": "Nación        266.643.212 Ha rurales    13.262.726 Ha extranjerizadas    4,97%\nLímite legal (ley 26.737)                                              15%"
+ },
+ {
+  "q": "El departamento de Lácar es el que está pegado a Villa La Angostura: es San Martín de los Andes. Calculá qué porcentaje de su tierra rural está en manos extranjeras.",
+  "options": [
+   "5%",
+   "54%",
+   "26%",
+   "15%"
+  ],
+  "answer": 1,
+  "why": "257.346 dividido 475.095 da 0,5417, o sea 54,17%. Más de la mitad de la tierra rural del departamento de al lado. Es el valor más alto de Neuquén y uno de los más altos del país.",
+  "code": "Lácar (Neuquén)\n  superficie rural      475.095 Ha\n  extranjerizada        257.346 Ha"
+ },
+ {
+  "q": "La ley 26.737 aplica el límite del 15% al país, pero también a cada provincia y a cada departamento por separado. ¿Por qué crees que lo hace así?",
+  "options": [
+   "Porque los departamentos son más chicos",
+   "Por una cuestión administrativa, sin efecto real",
+   "Porque si solo se midiera el total nacional, la concentración local quedaría invisible",
+   "Porque es más fácil de calcular"
+  ],
+  "answer": 2,
+  "why": "Con el 4,97% nacional, Lácar y su 54% desaparecen dentro del promedio. El límite por departamento es lo que hace visible la concentración en una zona. La escala a la que medís algo decide qué podés ver."
+ },
+ {
+  "q": "Bariloche tiene 23.050 hectáreas extranjerizadas y da 13,61%. Los Lagos, el departamento de Villa La Angostura, tiene 23.732 y da 6,67%. Casi las mismas hectáreas y la mitad de porcentaje. ¿Cómo puede ser?",
+  "options": [
+   "Porque uno de los dos está mal medido",
+   "Porque Bariloche tiene más lagos",
+   "Porque son de provincias distintas y la ley cambia",
+   "Porque tienen superficies rurales totales muy distintas"
+  ],
+  "answer": 3,
+  "why": "Los Lagos tiene más del doble de superficie rural que Bariloche, así que las mismas hectáreas pesan la mitad. El porcentaje y el número absoluto cuentan historias distintas, y para entender algo hay que mirar los dos.",
+  "code": "Bariloche    169.391 Ha rurales    23.050 Ha extranjerizadas   13,61%\nLos Lagos    355.910 Ha rurales    23.732 Ha extranjerizadas    6,67%"
+ },
+ {
+  "q": "Lácar y Los Lagos son departamentos vecinos, los dos cordilleranos, los dos turísticos, los dos con lagos grandes. Uno da 54,17% y el otro 6,67%. ¿Qué hacés con esa diferencia?",
+  "options": [
+   "La tomo como el inicio de una investigación: el dato abre la pregunta, no la responde",
+   "Concluyo que en Lácar midieron mal",
+   "Concluyo que Los Lagos tiene menos lagos",
+   "Nada, son números y ya"
+  ],
+  "answer": 0,
+  "why": "Los datos describen, no explican. Que dos lugares tan parecidos den resultados tan distintos es el tipo de hallazgo que arranca una investigación: qué pasó en Lácar que no pasó acá, cuándo, y quiénes compraron."
+ },
+ {
+  "q": "En el archivo, Chos Malal figura con 454.562 hectáreas rurales, la celda de hectáreas extranjerizadas VACÍA, y 0,00 en la columna de porcentaje. ¿Qué conviene hacer antes de usar ese dato?",
+  "options": [
+   "Reemplazarlo por el promedio provincial",
+   "Verificar si es un cero real o un dato que no se registró",
+   "Asumir que es cero y seguir",
+   "Descartar esas dos filas"
+  ],
+  "answer": 1,
+  "why": "Una celda vacía y un cero no son lo mismo. Puede ser que no haya nada extranjerizado, o que no se haya registrado nunca. La diferencia cambia la conclusión, y en un análisis serio se verifica y se deja documentado.",
+  "code": "Chos Malal    454.562,57                    0,00\nLoncopué      546.580,28                    0,00"
+ },
+ {
+  "q": "Querés armar el listado de todos los departamentos del país que superan el límite del 15%. ¿Qué verbo de consulta usás?",
+  "options": [
+   "Ordenar",
+   "Graficar",
+   "Filtrar",
+   "Agrupar"
+  ],
+  "answer": 2,
+  "why": "Filtrás las filas donde el porcentaje es mayor a 15. Si después querés saber cuántos son en cada provincia, ahí sí agrupás por provincia y contás."
+ },
+ {
+  "q": "Este registro existe porque la ley de 2011 obligó a crearlo y a mantenerlo actualizado. Si se derogara esa parte de la ley, ¿qué pasaría con estos datos?",
+  "options": [
+   "Seguirían actualizándose igual",
+   "Los produciría automáticamente otro organismo",
+   "No cambiaría nada",
+   "Dejarían de producirse, y sin dato no habría manera de verificar si se cumple un límite"
+  ],
+  "answer": 3,
+  "why": "Este dataset no existe en la naturaleza: existe porque una ley obligó a registrarlo. Sin registro no hay dato, sin dato no hay forma de verificar nada, y un límite que no se puede verificar es difícil de hacer cumplir. Qué se mide, y si se sigue midiendo, es una decisión política."
+ }
+];
+
 const DST=[
 {k:'Arrancamos',t:'De analizar datos a producirlos',h:`
   <div class="big">Todo este tiempo trabajamos con datos que <b>había medido otro</b>: el INTA, un censo,
@@ -3202,6 +3298,11 @@ function s4Home(){
       '<div class="tg">Banco 2 · '+EJ_ELEC.length+' ejercicios</div><h3>Electrónica, control y vocabulario</h3>'+
       '<p>Circuitos, pines, relés, PWM, lazo cerrado, histéresis y fallos. Situaciones para resolver '+
       'y vocabulario técnico del campo.</p></div>'+
+    '<div class="trackcard" onclick="quizStart(EJ_TIERRAS,\'Ley de tierras: leer el territorio\',\'s4Home()\')" style="margin-bottom:14px">'+
+      '<div class="tg">Caso real · '+EJ_TIERRAS.length+' ejercicios</div><h3>Ley de tierras: leer el territorio</h3>'+
+      '<p>Datos del Registro Nacional de Tierras Rurales, departamento por departamento. Lácar, el de al '+
+      'lado, tiene el 54% de su tierra rural en manos extranjeras y el promedio nacional es 4,97%. '+
+      'Qué esconde un promedio, y por qué que el dato exista es una decisión política.</p></div>'+
     '<button class="btn ghost" onclick="portal()">← Volver al panel</button></div>';
   window.scrollTo(0,0);
 }
