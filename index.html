@@ -1630,7 +1630,7 @@ const IST=[
   <div class="big">Y lo repite en un <b>bucle</b>, todo el tiempo.<br><br>
   Si le sacás el "decide", no es un robot: es un <b>automatismo</b>. Una puerta corrediza sensa y actúa,
   pero no elige nada, siempre hace lo mismo.<br><br>
-  Fíjense que esas tres palabras no dicen nada de que tenga forma humana, ni patas, ni que hable.
+  Esas tres palabras no dicen nada de que tenga forma humana, ni patas, ni que hable.
   <b>Eso lo puso el cine, no la ingeniería.</b></div>`},
 
 {t:"De dónde viene todo esto",k:"Línea histórica",h:`
@@ -1986,7 +1986,7 @@ const A1=[
  {q:"Una puerta corrediza de supermercado",r:false,e:"No. Sensa (detecta que te acercás) y actúa (abre), pero no decide nada: siempre hace exactamente lo mismo. Le falta el paso del medio."},
  {q:"Una Roomba",r:true,e:"Sí. Sensa (choques, suciedad, escalones), decide (arma el recorrido, vuelve a cargar) y actúa (se mueve y aspira)."},
  {q:"Un reloj despertador",r:false,e:"No. Mide el tiempo y suena a la hora fijada. No hay decisión, hay una condición programada de fábrica que siempre es la misma."},
- {q:"Un riego automático que mide la tierra y decide si abrir el agua",r:true,e:"Sí. Sensa (la humedad de la tierra), decide (si está seca o no) y actúa (abre o no el agua). Los tres pasos. Y fijate que es de los más simples de la lista: un robot no necesita ser complicado."}
+ {q:"Un riego automático que mide la tierra y decide si abrir el agua",r:true,e:"Sí. Sensa (la humedad de la tierra), decide (si está seca o no) y actúa (abre o no el agua). Los tres pasos. Y es de los más simples de la lista: un robot no necesita ser complicado."}
 ];
 let A1i=0,A1s=0,A1step=null;
 function act1(idx){
@@ -2086,7 +2086,7 @@ const A3=[
   sens:["Sensor de luz (LDR)","Sensor de temperatura","Sensor de distancia"],si:0,
   act:["Tres LEDs: rojo, amarillo y verde","Una bomba","Un servo"],ai:0,
   rule:["Menos de 30%: rojo. Entre 30 y 70: amarillo. Más de 70: verde","Si hay luz, prender los tres","Prender el verde siempre"],ri:0,
-  e:"Acá el aparato no arregla nada: informa. Muchas veces eso es lo más útil. Y fíjense que la regla tiene tres casos, no dos."},
+  e:"Acá el aparato no arregla nada: informa. Muchas veces eso alcanza. Y la regla tiene tres casos, no dos."},
  {p:"El invernadero se recalienta al mediodía y hay que abrir la ventanita a mano.",
   sens:["Sensor de temperatura","Sensor de luz","Sensor de humedad de suelo"],si:0,
   act:["Un servo","Un LED","Un buzzer"],ai:0,
@@ -2129,7 +2129,7 @@ function a3n(){A3i++;A3p={};
       <h2 class="ih">Ya diseñaron cuatro aparatos</h2>
       <div class="big">Sin escribir una línea de código. Eso es lo que hace un ingeniero antes de programar:
       decidir <b>qué medir</b>, <b>qué hacer</b> y <b>con qué regla</b>.<br><br>
-      Fíjense que en los cuatro casos la regla tenía la misma forma:
+      En los cuatro casos la regla tenía la misma forma:
       <b>si pasa esto, hacé aquello.</b> Eso en programación se llama <b>condicional</b>,
       y aparece en cualquier programa, tenga o no un aparato atrás.</div>
       ${introNav(A3step)}</div>`);
@@ -2666,7 +2666,7 @@ const DST=[
   la resta   (820 - lectura)   dice cuánto te alejaste de seco
   la división      / 470       dice qué fracción del recorrido total es
   el          * 100            lo pasa a porcentaje</div>
-  <div class="big">Probala con los tres casos y fijate que cierra:</div>
+  <div class="big">Comprobala con los tres casos:</div>
   <div class="serie">lectura 820   →   (820 - 820) * 100 / 470   =     0%
   lectura 585   →   (820 - 585) * 100 / 470   =    50%
   lectura 350   →   (820 - 350) * 100 / 470   =   100%</div>
