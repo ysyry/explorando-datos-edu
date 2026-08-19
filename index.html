@@ -1302,7 +1302,112 @@ const MIS=[
      for(const p of [4,5,6]){
        const debe=p===on?1:0, es=x.pins[p]===1?1:0;
        if(debe!==es)return{ok:false,msg:`Con el sensor al ${pct(v).toFixed(0)}% tendría que estar prendido solo el pin ${on}.`}}}
-   return{ok:true,msg:"Los tres casos funcionan. Ya podés programar cualquiera de los aparatos."}}}
+   return{ok:true,msg:"Los tres casos funcionan. Ya podés programar cualquiera de los aparatos."}}},
+
+/* ===== desafíos nuevos — del umbral a la banda ===== */
+
+{t:"Ni muy seca ni muy mojada",c:"and · dos condiciones",
+ g:"La lechuga quiere la tierra entre 40% y 70%. Si está en ese rango, prendé el verde (pin 6). Si está fuera, prendé el rojo (pin 4). Solo uno prendido a la vez.",
+ th:`Hasta ahora decidiste siempre con <b>una</b> condición. Casi ningún aparato real alcanza con eso.<br>
+     <code>if porcentaje > 40 and porcentaje < 70:</code><br>
+     <code>and</code> es cierto solo si <b>las dos</b> cosas lo son. <code>or</code> alcanza con que una lo sea.
+     También podés escribirlos en castellano: <code>y</code> y <code>o</code>.<br>
+     Fijate lo que cambió: una planta no quiere un <b>mínimo</b>, quiere estar <b>entre dos valores</b>.
+     Eso no es un umbral, es una <b>banda</b>.`,
+ s:"crudo = leer(A0)\nporcentaje = crudo * 100 / 1023\n",
+ chk:async r=>{
+   const casos=[[550,6],[150,4],[950,4],[450,6]];
+   for(const [v,on] of casos){const x=await r({an:{A0:v}});
+     if(x.err)return{ok:false,msg:""};
+     const off=on===6?4:6;
+     if(x.pins[on]!==1)return{ok:false,msg:`Con el sensor al ${pct(v).toFixed(0)}% tendría que estar prendido el pin ${on}.`}
+     if(x.pins[off]===1)return{ok:false,msg:`Con el sensor al ${pct(v).toFixed(0)}% el pin ${off} tendría que estar apagado. Solo uno a la vez.`}}
+   return{ok:true,msg:"Pasaste del umbral a la banda. Eso es lo que pide una planta de verdad."}}},
+
+{t:"Avisá si algo anda mal",c:"or · alguna de las dos",
+ g:"Prendé el buzzer (pin 9) si la tierra está MUY seca (menos de 20%) O MUY mojada (más de 85%). En cualquier otro caso, apagalo.",
+ th:`<code>or</code> es lo contrario de <code>and</code>: alcanza con que <b>una sola</b> de las dos sea cierta.<br>
+     <code>if porcentaje < 20 or porcentaje > 85:</code><br>
+     Una alarma casi siempre se escribe con <code>or</code>: suena si pasa <b>cualquiera</b> de las cosas malas.
+     Un permiso casi siempre se escribe con <code>and</code>: se da si se cumplen <b>todas</b> las condiciones.`,
+ s:"crudo = leer(A0)\nporcentaje = crudo * 100 / 1023\n",
+ chk:async r=>{
+   const casos=[[100,1],[950,1],[500,0],[700,0]];
+   for(const [v,debe] of casos){const x=await r({an:{A0:v}});
+     if(x.err)return{ok:false,msg:""};
+     const es=x.pins[9]===1?1:0;
+     if(es!==debe)return{ok:false,msg:`Con el sensor al ${pct(v).toFixed(0)}% el buzzer tendría que estar ${debe?"sonando":"apagado"}.`}}
+   return{ok:true,msg:"Alarma lista. Con or alcanza con que una sola cosa ande mal."}}},
+
+{t:"Parpadeá exactamente 5 veces",c:"for · repetir una cantidad",
+ g:"Hacé que el LED del pin 13 parpadee 5 veces y después pare. Ni una más ni una menos.",
+ th:`<code>while True</code> repite <b>para siempre</b>. Cuando sabés cuántas veces querés repetir, se usa <code>for</code>:<br>
+     <code>for i in range(5):</code> y abajo, indentado, lo que se repite.<br>
+     La variable <code>i</code> va tomando 0, 1, 2, 3, 4. Podés usarla o ignorarla.`,
+ s:"",
+ chk:async r=>{
+   const x=await r({an:{A0:512}});
+   if(x.err)return{ok:false,msg:""};
+   if(x.trans===0)return{ok:false,msg:"El LED nunca se prendió."};
+   if(x.trans<10)return{ok:false,msg:`Parpadeó ${Math.floor(x.trans/2)} veces y tendrían que ser 5. ¿Le pusiste el apagar( ) adentro del for?`};
+   if(x.trans>10)return{ok:false,msg:`Parpadeó de más (${Math.floor(x.trans/2)} veces). Si usaste while True, cambialo por for i in range(5).`};
+   return{ok:true,msg:"Cinco parpadeos justos. Ese es el for."}}},
+
+{t:"Promediá varias lecturas",c:"acumulador · sumar dentro de un for",
+ g:"Leé el sensor 5 veces sumando los valores. Mostrá primero la SUMA y después el PROMEDIO.",
+ th:`Un sensor real no da siempre el mismo número: <b>salta</b>. La forma más simple de estabilizarlo es
+     leerlo varias veces y promediar.<br>
+     Necesitás una variable que vaya <b>acumulando</b>:<br>
+     <code>suma = 0</code><br><code>for i in range(5):</code><br>
+     <code>&nbsp;&nbsp;&nbsp;&nbsp;suma = suma + leer(A0)</code><br>
+     Y al final <code>mostrar(suma)</code> y <code>mostrar(suma / 5)</code>.<br>
+     <i>Acá el simulador da siempre lo mismo, así que el promedio va a coincidir con la lectura.
+     En el aparato de verdad no, y por eso esto sirve.</i>`,
+ s:"suma = 0\n",
+ chk:async r=>{
+   for(const v of [300,800]){const x=await r({an:{A0:v}});
+     if(x.err)return{ok:false,msg:""};
+     const nums=x.out.map(parseFloat).filter(n=>!isNaN(n));
+     if(nums.length<2)return{ok:false,msg:"Tenés que mostrar dos cosas: primero la suma y después el promedio."};
+     const suma=nums[nums.length-2], prom=nums[nums.length-1];
+     if(Math.abs(suma-v*5)>1)return{ok:false,msg:`Con el sensor en ${v} la suma de 5 lecturas tendría que dar ${v*5} y mostraste ${suma}.`};
+     if(Math.abs(prom-v)>1)return{ok:false,msg:`El promedio tendría que dar ${v} y mostraste ${prom}. Es la suma dividida 5.`}}
+   return{ok:true,msg:"Acumulaste dentro de un bucle. Así se estabiliza un sensor que salta."}}},
+
+{t:"Que no titile",c:"banda de seguridad (histéresis)",
+ g:"Prendé la bomba (pin 8) cuando la humedad baje de 28%. Apagala cuando pase de 32%. Entre 28 y 32 no la toques: dejala como está.",
+ th:`Este es un problema real. Si prendés a menos de 30 y apagás a más de 30, cuando el valor queda
+     justo en el borde el aparato se <b>prende y apaga sin parar</b> y se rompe.<br>
+     La solución es usar <b>dos números</b> en vez de uno y dejar una zona muerta en el medio:<br>
+     <code>if porcentaje < 28:</code> prender<br>
+     <code>elif porcentaje > 32:</code> apagar<br>
+     Sin <code>else</code>: si está en el medio, el programa no hace nada.<br>
+     Esto se llama <b>histéresis</b>, y lo tiene adentro cualquier termostato del mundo.`,
+ s:"crudo = leer(A0)\nporcentaje = crudo * 100 / 1023\n",
+ chk:async r=>{
+   for(const [v,debe] of [[250,1],[500,0]]){const x=await r({an:{A0:v}});
+     if(x.err)return{ok:false,msg:""};
+     const es=x.pins[8]===1?1:0;
+     if(es!==debe)return{ok:false,msg:`Con el sensor al ${pct(v).toFixed(0)}% la bomba tendría que estar ${debe?"prendida":"apagada"}.`}}
+   const z=await r({an:{A0:307}});
+   if(z.err)return{ok:false,msg:""};
+   if(z.pins[8]!==undefined)return{ok:false,msg:"Con el sensor al 30% estás en la zona muerta: ahí el programa NO tiene que tocar la bomba, ni prenderla ni apagarla. Fijate que no te haya quedado un else, o un apagar( ) suelto arriba de todo."};
+   return{ok:true,msg:"Dos números en vez de uno, y una zona en el medio donde no hacés nada. Eso es lo que hace que un termostato no se vuelva loco."}}},
+
+{t:"Abrí la compuerta",c:"servo · mover algo",
+ g:"Si la temperatura pasa de 60%, abrí la compuerta del invernadero: servo(9, 90). Si no, cerrala: servo(9, 0).",
+ th:`Un <b>servo</b> es un motor que va a un ángulo exacto y se queda ahí. Es la forma más barata
+     de que un aparato <b>mueva</b> algo sin volverse un robot con ruedas.<br>
+     <code>servo(9, 90)</code> lo lleva a 90 grados. <code>servo(9, 0)</code> lo vuelve a cero.<br>
+     Con esto ya podés hacer una compuerta, un dispensador o un cartel que gira.`,
+ s:"crudo = leer(A0)\ntemperatura = crudo * 100 / 1023\n",
+ chk:async r=>{
+   const casos=[[900,90],[200,0],[700,90]];
+   for(const [v,ang] of casos){const x=await r({an:{A0:v}});
+     if(x.err)return{ok:false,msg:""};
+     if(x.servo===null)return{ok:false,msg:"Todavía no moviste el servo. Usá servo(9, 90) o servo(9, 0)."};
+     if(x.servo!==ang)return{ok:false,msg:`Con la temperatura al ${pct(v).toFixed(0)}% el servo tendría que estar en ${ang} grados y está en ${x.servo}.`}}
+   return{ok:true,msg:"Tu aparato ahora mueve algo. Ya podés construir una compuerta."}}}
 ];
 
 /* ---------- pantallas del track ---------- */
@@ -1466,7 +1571,7 @@ async function roboCheck(){
     if(!RDONE.includes(RM)){RDONE.push(RM);rsave()}
     fb(`<div class="verdict ok">¡Listo! ${res.msg}</div>
         ${RM+1<MIS.length?`<button class="btn" onclick="roboMis(${RM+1})">Siguiente misión →</button>`
-          :`<button class="btn" onclick="roboHome()">Terminaste las siete. Volver</button>`}`);
+          :`<button class="btn" onclick="roboHome()">Terminaste todas las misiones. Volver</button>`}`);
   }else{
     fb(`<div class="verdict no">Todavía no. ${res.msg}</div>`);
   }
